@@ -1,0 +1,3183 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TOPIK 9 SHOWDOWN — RHYTHM QUIZ DASH | MPU3152</title>
+    <!-- Google Fonts for Neo-Brutalism & Cyber Pixel Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,600;0,700;1,700&family=Press+Start+2P&family=Space+Grotesk:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ==========================================================================
+           NEON NEO-BRUTALISM DESIGN TOKENS & RESET
+           ========================================================================== */
+        :root {
+            --neon-cyan: #00F5FF;
+            --electric-purple: #8B5CF6;
+            --neon-pink: #FF00AA;
+            --electric-yellow: #FDE047;
+            --neon-green: #00FF66;
+            --neon-red: #FF2A55;
+            --dark-bg: #111111;
+            --dark-panel: #1A1A24;
+            --off-white: #FFFDF5;
+            --border-black: #000000;
+            --border-thick: 4px solid #000000;
+            --shadow-hard: 6px 6px 0px #000000;
+            --shadow-hard-sm: 4px 4px 0px #000000;
+            --shadow-hard-lg: 10px 10px 0px #000000;
+            --font-display: 'Chakra Petch', sans-serif;
+            --font-pixel: 'Press Start 2P', monospace;
+            --font-body: 'Space Grotesk', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--dark-bg);
+            color: var(--off-white);
+            font-family: var(--font-body);
+        }
+
+        /* ==========================================================================
+           MAIN GAME CONTAINER & CANVAS
+           ========================================================================== */
+        #app-wrapper {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #1b1336 0%, #111111 100%);
+        }
+
+        #game-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            z-index: 1;
+            cursor: pointer;
+        }
+
+        /* ==========================================================================
+           NEO-BRUTALISM UI UTILITIES
+           ========================================================================== */
+        .screen-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 20;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            background: rgba(17, 17, 17, 0.86);
+            backdrop-filter: blur(6px);
+            overflow-y: auto;
+        }
+
+        .screen-overlay.active {
+            display: flex;
+            animation: popIn 0.22s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+        }
+
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.94); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .neo-card {
+            background: var(--off-white);
+            color: var(--dark-bg);
+            border: var(--border-thick);
+            box-shadow: var(--shadow-hard-lg);
+            padding: 24px;
+            width: 100%;
+            max-width: 780px;
+            position: relative;
+        }
+
+        .neo-card-dark {
+            background: var(--dark-panel);
+            color: var(--off-white);
+            border: 4px solid var(--neon-cyan);
+            box-shadow: 8px 8px 0px #000000, 0 0 25px rgba(0, 245, 255, 0.25);
+            padding: 24px;
+            width: 100%;
+            max-width: 820px;
+            position: relative;
+        }
+
+        .neo-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 3px solid #000;
+            box-shadow: 3px 3px 0px #000;
+            background: var(--electric-yellow);
+            color: #000;
+        }
+
+        .neo-btn {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 12px 22px;
+            border: var(--border-thick);
+            box-shadow: var(--shadow-hard);
+            cursor: pointer;
+            transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #000;
+            background: var(--neon-cyan);
+            text-decoration: none;
+        }
+
+        .neo-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0px #000;
+        }
+
+        .neo-btn:active {
+            transform: translate(4px, 4px);
+            box-shadow: 2px 2px 0px #000;
+        }
+
+        .neo-btn.yellow { background: var(--electric-yellow); color: #000; }
+        .neo-btn.pink { background: var(--neon-pink); color: #fff; }
+        .neo-btn.purple { background: var(--electric-purple); color: #fff; }
+        .neo-btn.green { background: var(--neon-green); color: #000; }
+        .neo-btn.white { background: var(--off-white); color: #000; }
+        .neo-btn.red { background: var(--neon-red); color: #fff; }
+
+        .neo-btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 3px 3px 0px #000;
+        }
+
+        /* ==========================================================================
+           MAIN MENU STYLING
+           ========================================================================== */
+        .title-banner {
+            background: var(--electric-purple);
+            border: var(--border-thick);
+            box-shadow: var(--shadow-hard);
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-title {
+            font-family: var(--font-display);
+            font-size: clamp(1.6rem, 4vw, 2.7rem);
+            font-weight: 800;
+            line-height: 1.05;
+            color: var(--off-white);
+            text-shadow: 4px 4px 0px #000;
+            letter-spacing: 1px;
+        }
+
+        .game-subtitle {
+            font-family: var(--font-pixel);
+            font-size: clamp(0.65rem, 1.6vw, 0.9rem);
+            color: var(--electric-yellow);
+            margin-top: 8px;
+            text-shadow: 2px 2px 0px #000;
+        }
+
+        .tagline-box {
+            background: #000;
+            color: var(--neon-cyan);
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.9rem;
+            padding: 8px 14px;
+            border: 2px solid var(--neon-cyan);
+            text-align: center;
+            margin-bottom: 18px;
+            letter-spacing: 1.2px;
+        }
+
+        .hero-preview-row {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .cube-showcase {
+            background: #111;
+            border: var(--border-thick);
+            box-shadow: var(--shadow-hard-sm);
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .skin-selector {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .skin-dot {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #000;
+            cursor: pointer;
+            box-shadow: 2px 2px 0px #000;
+            transition: transform 0.15s;
+            position: relative;
+        }
+
+        .skin-dot.active {
+            transform: scale(1.2);
+            outline: 3px solid var(--electric-yellow);
+        }
+
+        .skin-dot.locked::after {
+            content: "🔒";
+            font-size: 11px;
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.65);
+        }
+
+        .stats-overview {
+            background: var(--off-white);
+            color: #000;
+            border: var(--border-thick);
+            box-shadow: var(--shadow-hard-sm);
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .rank-strip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--electric-yellow);
+            border: 3px solid #000;
+            padding: 8px 12px;
+            font-weight: 800;
+        }
+
+        .xp-bar-outer {
+            width: 100%;
+            height: 20px;
+            background: #222;
+            border: 3px solid #000;
+            position: relative;
+            margin: 8px 0;
+        }
+
+        .xp-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink));
+            width: 0%;
+            transition: width 0.35s ease;
+        }
+
+        .menu-grid-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        /* ==========================================================================
+           LEVEL SELECT GRID
+           ========================================================================== */
+        .levels-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+            margin: 16px 0;
+        }
+
+        .level-card {
+            background: var(--off-white);
+            color: #000;
+            border: var(--border-thick);
+            box-shadow: var(--shadow-hard-sm);
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.15s;
+            position: relative;
+        }
+
+        .level-card:hover:not(.locked) {
+            transform: translate(-3px, -3px);
+            box-shadow: 7px 7px 0px #000;
+        }
+
+        .level-card.locked {
+            background: #d1d1d6;
+            opacity: 0.85;
+        }
+
+        .level-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .level-stars {
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+        }
+
+        .boss-banner-card {
+            background: linear-gradient(90deg, #2b0938, #4c0519);
+            color: var(--off-white);
+            border: 4px solid var(--neon-pink);
+            box-shadow: var(--shadow-hard);
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        /* ==========================================================================
+           GAMEPLAY HUD
+           ========================================================================== */
+        #hud-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 10;
+            padding: 12px 16px;
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        #hud-layer.active {
+            display: flex;
+        }
+
+        .hud-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .hud-stat-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .hud-pill {
+            background: var(--off-white);
+            color: #000;
+            border: 3px solid #000;
+            box-shadow: 4px 4px 0px #000;
+            padding: 6px 12px;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.92rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .hud-pill.cyan { background: var(--neon-cyan); }
+        .hud-pill.yellow { background: var(--electric-yellow); }
+        .hud-pill.purple { background: var(--electric-purple); color: #fff; }
+        .hud-pill.pink { background: var(--neon-pink); color: #fff; }
+
+        .hud-controls {
+            display: flex;
+            gap: 8px;
+            pointer-events: auto;
+        }
+
+        .hud-icon-btn {
+            background: var(--electric-yellow);
+            color: #000;
+            border: 3px solid #000;
+            box-shadow: 4px 4px 0px #000;
+            padding: 6px 12px;
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .hud-icon-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px #000;
+        }
+
+        .hud-progress-container {
+            width: 100%;
+            max-width: 560px;
+            margin: 0 auto;
+            background: #000;
+            border: 3px solid #000;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.85);
+            height: 22px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hud-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--electric-yellow), var(--neon-pink));
+            transition: width 0.1s linear;
+        }
+
+        .hud-progress-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 0.78rem;
+            color: #fff;
+            text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+        }
+
+        .gate-marker {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--off-white);
+            z-index: 2;
+        }
+
+        /* ==========================================================================
+           QUIZ GATE & FINAL BOSS MODAL STYLING
+           ========================================================================== */
+        .quiz-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #000;
+            color: var(--electric-yellow);
+            padding: 10px 16px;
+            border: 3px solid #000;
+            margin-bottom: 14px;
+            font-family: var(--font-display);
+            font-weight: 700;
+        }
+
+        .quiz-question-box {
+            background: #ffffff;
+            color: #000;
+            border: var(--border-thick);
+            box-shadow: var(--shadow-hard-sm);
+            padding: 16px;
+            margin-bottom: 16px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            line-height: 1.45;
+        }
+
+        .quiz-options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .quiz-option-btn {
+            background: var(--off-white);
+            color: #000;
+            border: 3px solid #000;
+            box-shadow: 4px 4px 0px #000;
+            padding: 12px 16px;
+            text-align: left;
+            font-family: var(--font-body);
+            font-size: 0.96rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: transform 0.1s, background-color 0.15s;
+        }
+
+        .quiz-option-btn:hover:not(:disabled) {
+            background: var(--neon-cyan);
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #000;
+        }
+
+        .quiz-option-btn.correct {
+            background: var(--neon-green) !important;
+            color: #000 !important;
+        }
+
+        .quiz-option-btn.wrong {
+            background: var(--neon-red) !important;
+            color: #fff !important;
+        }
+
+        .option-key {
+            background: #000;
+            color: var(--electric-yellow);
+            font-family: var(--font-display);
+            font-weight: 800;
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .quiz-feedback-box {
+            display: none;
+            border: var(--border-thick);
+            box-shadow: var(--shadow-hard-sm);
+            padding: 14px;
+            margin-bottom: 14px;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        .quiz-feedback-box.active {
+            display: block;
+        }
+
+        /* ==========================================================================
+           BOSS STAGE VISUALS
+           ========================================================================== */
+        .boss-arena-stage {
+            background: #0d0914;
+            border: 4px solid var(--neon-pink);
+            box-shadow: var(--shadow-hard-sm);
+            padding: 14px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: var(--off-white);
+        }
+
+        .boss-hp-bar-outer {
+            width: 100%;
+            height: 24px;
+            background: #2a0818;
+            border: 3px solid #000;
+            position: relative;
+            margin-top: 6px;
+        }
+
+        .boss-hp-bar-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, var(--neon-red), var(--neon-pink), var(--electric-yellow));
+            transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* ==========================================================================
+           ACHIEVEMENT TOAST NOTIFICATION
+           ========================================================================== */
+        #achievement-toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            background: var(--electric-yellow);
+            color: #000;
+            border: var(--border-thick);
+            box-shadow: var(--shadow-hard);
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateY(150%);
+            transition: transform 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            max-width: 360px;
+        }
+
+        #achievement-toast.show {
+            transform: translateY(0);
+        }
+
+        .badges-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 14px 0;
+        }
+
+        .badge-item {
+            border: 3px solid #000;
+            padding: 10px;
+            background: #e5e5e5;
+            color: #555;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .badge-item.unlocked {
+            background: var(--electric-yellow);
+            color: #000;
+            box-shadow: 3px 3px 0px #000;
+        }
+
+        /* ==========================================================================
+           RESPONSIVE BREAKPOINTS
+           ========================================================================== */
+        @media (max-width: 680px) {
+            .hero-preview-row {
+                grid-template-columns: 1fr;
+            }
+            .levels-grid {
+                grid-template-columns: 1fr;
+            }
+            .menu-grid-buttons {
+                grid-template-columns: 1fr;
+            }
+            .badges-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .neo-card, .neo-card-dark {
+                padding: 16px;
+            }
+            .boss-arena-stage {
+                flex-direction: column;
+                text-align: center;
+            }
+            .boss-banner-card {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-wrapper">
+    <!-- MAIN RHYTHM RUNNER CANVAS -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- GAMEPLAY HUD -->
+    <div id="hud-layer">
+        <div class="hud-top-row">
+            <div class="hud-stat-group">
+                <div class="hud-pill purple" id="hud-level-name">LVL 1: JUSTICE DASH</div>
+                <div class="hud-pill cyan">SKOR: <span id="hud-score">0</span></div>
+                <div class="hud-pill yellow">🪙 <span id="hud-coins">0</span></div>
+                <div class="hud-pill pink">⚡ XP: <span id="hud-xp">0</span></div>
+            </div>
+            <div class="hud-controls">
+                <button class="hud-icon-btn" id="hud-assist-btn" title="Mod Bantuan Pembentangan (Auto-Lompat)">🤖 AUTO: OFF</button>
+                <button class="hud-icon-btn" id="hud-music-btn" title="Tukar Muzik">🎵 MUZIK: ON</button>
+                <button class="hud-icon-btn" id="hud-pause-btn" title="Jeda Permainan (ESC)">⏸ PAUSE</button>
+            </div>
+        </div>
+        <div class="hud-progress-container">
+            <div class="hud-progress-fill" id="hud-progress-bar"></div>
+            <div class="gate-marker" style="left: 28%;" title="Quiz Gate 1"></div>
+            <div class="gate-marker" style="left: 58%;" title="Quiz Gate 2"></div>
+            <div class="gate-marker" style="left: 85%;" title="Quiz Gate 3"></div>
+            <div class="hud-progress-text" id="hud-progress-text">PROGRESS: 0%</div>
+        </div>
+    </div>
+
+    <!-- A. MAIN MENU SCREEN -->
+    <div id="screen-main-menu" class="screen-overlay active">
+        <div class="neo-card">
+            <div class="title-banner">
+                <span class="neo-badge" style="margin-bottom:8px;">GAMIFIKASI MPU3152 TOPIK 9</span>
+                <h1 class="game-title">TOPIK 9 SHOWDOWN</h1>
+                <div class="game-subtitle">RHYTHM QUIZ DASH</div>
+            </div>
+
+            <div class="tagline-box">
+                "JUMP TO THE BEAT. DODGE THE OBSTACLES. MASTER THE KNOWLEDGE!"
+            </div>
+
+            <div class="hero-preview-row">
+                <!-- Animated Cube Preview & Skin Picker -->
+                <div class="cube-showcase">
+                    <canvas id="menu-cube-canvas" width="130" height="110"></canvas>
+                    <div style="font-family:var(--font-display); font-size:0.78rem; color:var(--neon-cyan); margin-top:4px;" id="selected-skin-name">
+                        SKIN: CYBER CYAN
+                    </div>
+                    <div class="skin-selector" id="skin-selector-container"></div>
+                </div>
+
+                <!-- Player Progress & Rank Summary -->
+                <div class="stats-overview">
+                    <div>
+                        <div class="rank-strip">
+                            <span>PANGKAT: <span id="menu-rank-title">PERINTIS KEADILAN</span></span>
+                            <span>⭐ <span id="menu-total-stars">0</span>/12</span>
+                        </div>
+                        <div style="margin-top:10px; font-weight:700; font-size:0.88rem; display:flex; justify-content:space-between;">
+                            <span>JUMLAH XP: <span id="menu-total-xp">0</span> XP</span>
+                            <span>SKOR TERTINGGI: <span id="menu-high-score">0</span></span>
+                        </div>
+                        <div class="xp-bar-outer">
+                            <div class="xp-bar-fill" id="menu-xp-fill"></div>
+                        </div>
+                    </div>
+
+                    <div style="font-size:0.83rem; background:#f0eee4; border:2px solid #000; padding:8px; margin-top:4px;">
+                        <strong>Misi Topik 9:</strong> Kuasai Keadilan Sosial, Etika Pembangunan, Krisis Sosial & Peranan Guru sebagai Agen Perubahan!
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-grid-buttons">
+                <button class="neo-btn green" id="btn-start-game" style="font-size:1.15rem;">▶ MULA PERMAINAN</button>
+                <button class="neo-btn cyan" id="btn-level-select">🗺️ PILIH LEVEL & BOSS</button>
+                <button class="neo-btn yellow" id="btn-how-to-play">📖 CARA BERMAIN & NOTA</button>
+                <button class="neo-btn purple" id="btn-sound-settings">🔊 TETAPAN AUDIO & LENCANA</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- B. LEVEL SELECT SCREEN -->
+    <div id="screen-level-select" class="screen-overlay">
+        <div class="neo-card" style="max-width: 860px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+                <h2 style="font-family:var(--font-display); font-size:1.7rem; font-weight:800;">PILIH ZON CABARAN (TOPIK 9)</h2>
+                <button class="neo-btn yellow" id="btn-unlock-all" style="padding:8px 14px; font-size:0.82rem;">🔓 BUKA SEMUA (MOD PEMBENTANGAN)</button>
+            </div>
+
+            <div class="levels-grid" id="levels-grid-container"></div>
+
+            <!-- Final Boss Banner -->
+            <div class="boss-banner-card">
+                <div>
+                    <span class="neo-badge" style="background:var(--neon-pink); color:#fff; margin-bottom:6px;">CABARAN AKHIR // KAJIAN KES</span>
+                    <h3 style="font-family:var(--font-display); font-size:1.3rem; color:var(--electric-yellow);">FINAL BOSS: THE SOCIAL INEQUALITY CHALLENGE</h3>
+                    <p style="font-size:0.86rem; opacity:0.92; margin-top:4px;">Tumpaskan Entiti Ketidaksamaan Sosial dengan menyelesaikan 5 kajian kes kritikal MPU3152!</p>
+                </div>
+                <button class="neo-btn pink" id="btn-launch-boss" style="flex-shrink:0;">⚔️ CABAR BOSS</button>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <button class="neo-btn white" id="btn-back-from-levels">⬅ KEMBALI KE MENU</button>
+                <span style="font-size:0.85rem; font-weight:700;">💡 Tip: Setiap Quiz Gate yang dibuka menjadi Checkpoint!</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- C. HOW TO PLAY & EDUCATIONAL NOTES SCREEN -->
+    <div id="screen-how-to-play" class="screen-overlay">
+        <div class="neo-card" style="max-width: 800px;">
+            <h2 style="font-family:var(--font-display); font-size:1.6rem; margin-bottom:12px; border-bottom:4px solid #000; padding-bottom:8px;">
+                📖 PANDUAN KAWALAN & RINGKASAN TOPIK 9
+            </h2>
+
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:14px; margin-bottom:16px;">
+                <div style="background:#fff; border:3px solid #000; box-shadow:4px 4px 0 #000; padding:12px;">
+                    <h3 style="font-family:var(--font-display); color:var(--electric-purple); margin-bottom:6px;">🎮 KAWALAN PERMAINAN</h3>
+                    <ul style="padding-left:18px; font-size:0.9rem; line-height:1.6; font-weight:600;">
+                        <li><strong>SPACE / KLIK KIRI / TAP SKRIN:</strong> Lompat melepasi duri neon & halangan.</li>
+                        <li><strong>TAHAN SPACE / TAP:</strong> Lompat berterusan mengikut rentak.</li>
+                        <li><strong>QUIZ GATE:</strong> Jawab soalan MPU3152 untuk membuka perisai portal & simpan <em>Checkpoint</em>!</li>
+                        <li><strong>MOD AUTO (HUD):</strong> Boleh diaktifkan semasa pembentangan kelas.</li>
+                    </ul>
+                </div>
+
+                <div style="background:#fff; border:3px solid #000; box-shadow:4px 4px 0 #000; padding:12px;">
+                    <h3 style="font-family:var(--font-display); color:var(--neon-pink); margin-bottom:6px;">📚 INTIPATI MPU3152 TOPIK 9</h3>
+                    <ul style="padding-left:18px; font-size:0.86rem; line-height:1.55; font-weight:600;">
+                        <li><strong>Level 1 (Keadilan Sosial):</strong> Konsep <em>'Adl</em>, <em>Al-Mizan</em>, <em>Fardhu Kifayah</em>, <em>Justice as Fairness</em> (Rawls) & Ekuiti Pendidikan.</li>
+                        <li><strong>Level 2 (Etika Pembangunan):</strong> Amanah <em>Khilafah</em>, <em>Development as Freedom</em> (Amartya Sen) & Kelestarian.</li>
+                        <li><strong>Level 3 (Krisis Sosial):</strong> Kemiskinan Sistemik, Jurang Digital & Marginalisasi.</li>
+                        <li><strong>Level 4 (Guru Wira):</strong> Guru sebagai <em>Agen Perubahan</em>, <em>Equity Advocate</em> & Pedagogi Responsif Budaya.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <button class="neo-btn cyan" id="btn-close-howto" style="width:100%;">FAHAM & KEMBALI KE MENU</button>
+        </div>
+    </div>
+
+    <!-- D. SOUND SETTINGS & ACHIEVEMENTS SCREEN -->
+    <div id="screen-settings" class="screen-overlay">
+        <div class="neo-card" style="max-width: 760px;">
+            <h2 style="font-family:var(--font-display); font-size:1.6rem; margin-bottom:14px;">🔊 TETAPAN AUDIO & PENCAPAIAN</h2>
+
+            <div style="background:#fff; border:3px solid #000; box-shadow:4px 4px 0 #000; padding:16px; margin-bottom:16px;">
+                <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                    <button class="neo-btn cyan" id="btn-toggle-music">MUZIK: ON</button>
+                    <button class="neo-btn yellow" id="btn-toggle-sfx">KESAN BUNYI (SFX): ON</button>
+                    <div style="display:flex; align-items:center; gap:10px; font-weight:800;">
+                        <label for="volume-slider">VOLUMEN:</label>
+                        <input type="range" id="volume-slider" min="0" max="100" value="75" style="width:140px; accent-color:var(--neon-pink);">
+                        <span id="volume-label">75%</span>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="font-family:var(--font-display); font-size:1.2rem;">🏆 LENCANA PENCAPAIAN (ACHIEVEMENTS)</h3>
+            <div class="badges-grid" id="achievements-grid"></div>
+
+            <div style="display:flex; justify-content:space-between; gap:12px; margin-top:14px;">
+                <button class="neo-btn white" id="btn-close-settings">⬅ KEMBALI</button>
+                <button class="neo-btn red" id="btn-reset-save" style="font-size:0.82rem;">🗑️ RESET DATA PERMAINAN</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- E. QUIZ GATE MODAL SCREEN -->
+    <div id="screen-quiz-gate" class="screen-overlay">
+        <div class="neo-card" style="max-width: 760px;">
+            <div class="quiz-header-bar">
+                <span id="quiz-gate-category">QUIZ GATE 1/3 // LEVEL 1</span>
+                <span class="neo-badge" id="quiz-gate-type">MULTIPLE CHOICE</span>
+            </div>
+
+            <div class="quiz-question-box" id="quiz-question-text">
+                Soalan kuiz akan dipaparkan di sini...
+            </div>
+
+            <div class="quiz-options-grid" id="quiz-options-container"></div>
+
+            <div class="quiz-feedback-box" id="quiz-feedback-box">
+                <div id="quiz-feedback-title" style="font-family:var(--font-display); font-size:1.1rem; margin-bottom:4px;"></div>
+                <div id="quiz-feedback-desc" style="font-size:0.92rem;"></div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:12px;">
+                <button class="neo-btn yellow" id="btn-quiz-retry" style="display:none;">🔄 CUBA SEMULA SOALAN</button>
+                <button class="neo-btn green" id="btn-quiz-continue" style="display:none;">🚀 BUKA PORTAL & TERUSKAN (+200 PTS)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- F. FINAL BOSS CHALLENGE SCREEN -->
+    <div id="screen-boss-challenge" class="screen-overlay">
+        <div class="neo-card-dark">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+                <span class="neo-badge" style="background:var(--neon-pink); color:#fff;">FINAL BOSS SHOWDOWN // KAJIAN KES</span>
+                <span style="font-family:var(--font-display); font-weight:700; color:var(--electric-yellow);" id="boss-case-counter">KAJIAN KES 1 / 5</span>
+            </div>
+
+            <div class="boss-arena-stage">
+                <canvas id="boss-avatar-canvas" width="120" height="120" style="border:3px solid var(--neon-cyan); background:#07050a; flex-shrink:0;"></canvas>
+                <div style="width:100%;">
+                    <div style="display:flex; justify-content:space-between; font-family:var(--font-display); font-weight:800;">
+                        <span style="color:var(--neon-cyan); font-size:1.1rem;">ENTITI KETIDAKSAMAAN SOSIAL (NEXUS-9)</span>
+                        <span style="color:var(--neon-red);" id="boss-hp-text">HP: 100%</span>
+                    </div>
+                    <div class="boss-hp-bar-outer">
+                        <div class="boss-hp-bar-fill" id="boss-hp-fill"></div>
+                    </div>
+                    <p style="font-size:0.84rem; margin-top:6px; color:#ccc;" id="boss-status-line">
+                        "Ketidaksamaan struktur dan jurang pendidikan tidak mudah diruntuhkan! Buktikan kebijaksanaan ilmu anda!"
+                    </p>
+                </div>
+            </div>
+
+            <div class="quiz-question-box" id="boss-question-text" style="background:var(--off-white);">
+                Soalan kajian kes Boss...
+            </div>
+
+            <div class="quiz-options-grid" id="boss-options-container"></div>
+
+            <div class="quiz-feedback-box" id="boss-feedback-box" style="color:#000;">
+                <div id="boss-feedback-title" style="font-family:var(--font-display); font-size:1.05rem; margin-bottom:4px;"></div>
+                <div id="boss-feedback-desc" style="font-size:0.9rem;"></div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                <button class="neo-btn white" id="btn-boss-retreat" style="padding:10px 14px; font-size:0.85rem;">⬅ KELUAR</button>
+                <div>
+                    <button class="neo-btn yellow" id="btn-boss-retry" style="display:none;">🔄 ANALISIS SEMULA</button>
+                    <button class="neo-btn green" id="btn-boss-next" style="display:none;">⚡ LANCARKAN HUJAH ILMU</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- G. PAUSE MENU -->
+    <div id="screen-pause" class="screen-overlay">
+        <div class="neo-card" style="max-width: 460px; text-align:center;">
+            <h2 style="font-family:var(--font-display); font-size:2rem; margin-bottom:8px;">⏸ PERMAINAN DIJEDA</h2>
+            <p style="font-weight:700; margin-bottom:18px;" id="pause-level-label">LEVEL 1 — JUSTICE DASH</p>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <button class="neo-btn green" id="btn-resume-game">▶ SAMBUNG PERMAINAN</button>
+                <button class="neo-btn yellow" id="btn-restart-level">🔄 MULA SEMULA LEVEL</button>
+                <button class="neo-btn white" id="btn-pause-to-menu">🏠 MENU UTAMA</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- H. GAME OVER SCREEN -->
+    <div id="screen-game-over" class="screen-overlay">
+        <div class="neo-card" style="max-width: 540px; text-align:center;">
+            <span class="neo-badge" style="background:var(--neon-red); color:#fff; margin-bottom:8px;">HALANGAN DILANGGAR!</span>
+            <h2 style="font-family:var(--font-display); font-size:2.1rem; margin-bottom:12px;">CUBE TERHEMPAS!</h2>
+
+            <div style="background:#fff; border:3px solid #000; box-shadow:4px 4px 0 #000; padding:14px; margin-bottom:16px; text-align:left;">
+                <div style="display:flex; justify-content:space-between; padding:4px 0; font-weight:700;">
+                    <span>SKOR SEMASA:</span> <span id="gameover-score">0</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:4px 0; font-weight:700;">
+                    <span>SYILING DIKUMPUL:</span> <span id="gameover-coins">0</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:4px 0; font-weight:700;">
+                    <span>KETEPATAN KUIZ:</span> <span id="gameover-accuracy">100%</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:4px 0; font-weight:700;">
+                    <span>PROGRESS LEVEL:</span> <span id="gameover-progress">0%</span>
+                </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <button class="neo-btn green" id="btn-continue-checkpoint">⚡ SAMBUNG DARI CHECKPOINT TERAKHIR</button>
+                <button class="neo-btn yellow" id="btn-gameover-retry">🔄 MULA SEMULA DARI AWAL (0%)</button>
+                <button class="neo-btn white" id="btn-gameover-menu">🏠 MENU UTAMA</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- I. LEVEL COMPLETE / VICTORY SCREEN -->
+    <div id="screen-victory" class="screen-overlay">
+        <div class="neo-card" style="max-width: 680px; text-align:center;">
+            <span class="neo-badge" id="victory-badge-top" style="margin-bottom:8px;">TAHNIAH! ZON BERJAYA DIKUASAI</span>
+            <h2 style="font-family:var(--font-display); font-size:2.2rem; margin-bottom:6px;" id="victory-title">LEVEL LENGKAP!</h2>
+            <div style="font-size:1.8rem; margin-bottom:12px;" id="victory-stars">⭐⭐⭐</div>
+
+            <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-bottom:16px; text-align:left;">
+                <div style="background:#fff; border:3px solid #000; padding:10px; font-weight:700;">
+                    <div>JUMLAH SKOR: <span id="victory-score" style="color:var(--electric-purple);">0</span></div>
+                    <div>SYILING: <span id="victory-coins">0</span></div>
+                </div>
+                <div style="background:#fff; border:3px solid #000; padding:10px; font-weight:700;">
+                    <div>JUMLAH XP: <span id="victory-xp" style="color:var(--neon-pink);">0</span> XP</div>
+                    <div>PANGKAT: <span id="victory-rank">WIRA KEADILAN</span></div>
+                </div>
+            </div>
+
+            <div style="background:#111; color:var(--neon-cyan); border:3px solid #000; padding:12px; margin-bottom:16px; font-weight:700; font-size:0.9rem;" id="victory-summary-msg">
+                Anda telah membuktikan kefahaman tinggi dalam konsep Keadilan Sosial!
+            </div>
+
+            <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+                <button class="neo-btn green" id="btn-victory-next">▶ TERUSKAN KE CABARAN SETERUSNYA</button>
+                <button class="neo-btn yellow" id="btn-victory-replay">🔄 MAIN SEMULA</button>
+                <button class="neo-btn white" id="btn-victory-menu">🏠 MENU UTAMA</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ACHIEVEMENT TOAST -->
+    <div id="achievement-toast">
+        <div style="font-size:1.8rem;" id="toast-icon">🏆</div>
+        <div>
+            <div style="font-family:var(--font-display); font-weight:800; font-size:0.8rem;">PENCAPAIAN DIBUKA!</div>
+            <div style="font-weight:800; font-size:1rem;" id="toast-title">FIRST JUMP</div>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ============================================================================
+   TOPIK 9 SHOWDOWN — RHYTHM QUIZ DASH
+   Modular Vanilla JS Architecture:
+   1. Educational Data (4 Levels x 3 Questions + 5 Boss Case Studies)
+   2. Audio Manager (Web Audio API Chiptune/Synthwave Beat Engine & SFX)
+   3. Reward & State Manager (XP, Coins, Skins, Achievements, Save Data)
+   4. Level Manager & Obstacle Spawner
+   5. Player Controller & Physics Engine (Gravity, Coyote Time, Jump Buffer)
+   6. Collision Detection & Quiz Engine
+   7. Render Engine & UI Manager
+   ============================================================================ */
+
+// ============================================================================
+// 1. EDUCATIONAL QUIZ & LEVEL DATABASE (MPU3152 TOPIK 9)
+// ============================================================================
+const SKINS_DATA = [
+    { id: 'cyan', name: 'CYBER CYAN', color: '#00F5FF', inner: '#FF00AA', reqXP: 0 },
+    { id: 'gold', name: 'AL-MIZAN GOLD', color: '#FDE047', inner: '#8B5CF6', reqXP: 200 },
+    { id: 'pink', name: 'NEON MAGENTA', color: '#FF00AA', inner: '#00F5FF', reqXP: 500 },
+    { id: 'emerald', name: 'ECO EMERALD', color: '#00FF66', inner: '#111111', reqXP: 800 },
+    { id: 'prime', name: 'JUSTICE PRIME', color: '#8B5CF6', inner: '#FDE047', reqXP: 1200 }
+];
+
+const ACHIEVEMENTS_DATA = [
+    { id: 'first_jump', title: 'FIRST JUMP', desc: 'Lakukan lompatan pertama mengikut rentak!', icon: '🚀' },
+    { id: 'coin_dasher', title: 'COIN DASHER', desc: 'Kumpul sekurang-kurangnya 15 syiling!', icon: '🪙' },
+    { id: 'quiz_master', title: 'QUIZ MASTER', desc: 'Jawab 3 kuiz berturut-turut dengan tepat!', icon: '🧠' },
+    { id: 'perfect_rhythm', title: 'PERFECT RHYTHM', desc: 'Tamatkan mana-mana level tanpa terhempas!', icon: '🎵' },
+    { id: 'justice_hero', title: 'JUSTICE HERO', desc: 'Lengkapkan kesemua 4 Level MPU3152 Topik 9!', icon: '⚖️' },
+    { id: 'social_legend', title: 'SOCIAL IMPACT LEGEND', desc: 'Tewaskan Final Boss Ketidaksamaan Sosial!', icon: '👑' }
+];
+
+const LEVELS_DATA = [
+    {
+        id: 1,
+        title: "LEVEL 1 — JUSTICE DASH",
+        subtitle: "Konsep Keadilan Sosial ('Adl, Al-Mizan & Ekuiti)",
+        worldTheme: "Neon Justice World",
+        primaryColor: "#00F5FF",
+        secondaryColor: "#8B5CF6",
+        bgColorTop: "#0e122e",
+        bgColorBottom: "#090a14",
+        bpm: 126,
+        speed: 410,
+        length: 6600,
+        questions: [
+            {
+                type: "KONSEP FALSAFAH",
+                question: "Dalam falsafah Islam, apakah maksud sebenar konsep Keadilan ('Adl) dan Neraca Keseimbangan (Al-Mizan) dalam konteks kemasyarakatan?",
+                options: [
+                    "Memberikan jumlah agihan yang 100% sama rata kepada semua individu tanpa mengira keperluan.",
+                    "Meletakkan sesuatu pada tempatnya yang hak serta memberikan hak mengikut keperluan dan tanggungjawab.",
+                    "Membenarkan golongan elit memonopoli sumber ekonomi asalkan cukai minimum dibayar.",
+                    "Mengutamakan pembangunan fizikal semata-mata berbanding kebajikan golongan rentan."
+                ],
+                correct: 1,
+                explanation: "Tepat! Konsep 'Adl dan Al-Mizan menuntut keseimbangan dan meletakkan sesuatu pada tempatnya yang wajar (ekuiti), bukan sekadar sama rata secara membuta tuli."
+            },
+            {
+                type: "TEORI KEADILAN",
+                question: "John Rawls memperkenalkan teori 'Justice as Fairness' melalui prinsip 'Difference Principle'. Bagaimanakah prinsip ini selari dengan tuntutan Fardhu Kifayah dalam pendidikan?",
+                options: [
+                    "Ketidaksamaan agihan bantuan dibenarkan jika ia memberi manfaat terbesar kepada golongan paling kurang bernasib baik.",
+                    "Hanya murid yang mendapat keputusan cemerlang layak menerima kemudahan asas pembelajaran.",
+                    "Masyarakat bebas mengabaikan keciciran murid miskin kerana itu tanggungjawab individu semata-mata.",
+                    "Semua sekolah wajib mengenakan yuran tinggi untuk meningkatkan persaingan pasaran."
+                ],
+                correct: 0,
+                explanation: "Syabas! Rawls menegaskan sumber perlu diagihkan supaya membela golongan paling terpinggir, selaras dengan tuntutan Fardhu Kifayah untuk memastikan tiada ahli masyarakat yang terbiar."
+            },
+            {
+                type: "SENARIO PENDIDIKAN",
+                question: "Sekolah Kebangsaan Seri Harmoni mempunyai murid daripada pelbagai latar belakang termasuk murid B40 dan OKU. Manakah tindakan yang mencerminkan 'Ekuiti Pendidikan' (Educational Equity)?",
+                options: [
+                    "Memberikan buku teks yang sama tetapi menafikan kemudahan tanjakan (ramp) dan kelas pemulihan.",
+                    "Menyediakan intervensi pemulihan khas, bantuan peranti, dan sokongan mengikut keperluan unik murid.",
+                    "Mengasingkan murid kurang berkemampuan daripada menyertai aktiviti kokurikulum sekolah.",
+                    "Menetapkan sasaran markah lulus yang berbeza mengikut status pendapatan ibu bapa."
+                ],
+                correct: 1,
+                explanation: "Betul! Ekuiti pendidikan bermaksud menyediakan sokongan tambahan yang bersesuaian dengan keperluan murid supaya setiap insan berpeluang mencapai kejayaan."
+            }
+        ]
+    },
+    {
+        id: 2,
+        title: "LEVEL 2 — ETHICS RUN",
+        subtitle: "Etika Pembangunan, Kemanusiaan & Khilafah",
+        worldTheme: "Neon Eco World",
+        primaryColor: "#00FF66",
+        secondaryColor: "#00F5FF",
+        bgColorTop: "#08261e",
+        bgColorBottom: "#06120e",
+        bpm: 130,
+        speed: 430,
+        length: 6900,
+        questions: [
+            {
+                type: "ETIKA ALAM & MANUSIA",
+                question: "Sebagai Khalifah (pemegang amanah Khilafah) di muka bumi, apakah prinsip etika pembangunan yang wajib dipatuhi oleh manusia?",
+                options: [
+                    "Mengeksploitasi hasil hutan secara maksimum demi mengejar keuntungan korporat segera.",
+                    "Memakmurkan bumi ('Imarah) secara mampan serta mengelakkan kerosakan (Fasad) terhadap ekosistem dan masyarakat.",
+                    "Menghentikan semua bentuk kemajuan teknologi dan kembali hidup secara primitif.",
+                    "Memindahkan pencemaran industri ke kawasan penempatan penduduk luar bandar."
+                ],
+                correct: 1,
+                explanation: "Benar! Prinsip Khilafah menuntut manusia mengurus pembangunan dengan penuh amanah ('Imarah) serta memelihara kesejahteraan manusia dan alam daripada kemusnahan."
+            },
+            {
+                type: "PEMIKIRAN EKONOMI MANUSIAWI",
+                question: "Pemenang Hadiah Nobel, Amartya Sen memperkenalkan konsep 'Development as Freedom'. Apakah ukuran utama kemajuan sesebuah negara menurut beliau?",
+                options: [
+                    "Peningkatan angka Keluaran Dalam Negara Kasar (KDNK) semata-mata walaupun jurang kemiskinan melebar.",
+                    "Jumlah bangunan pencakar langit dan projek mega di ibu kota.",
+                    "Peluasan kebebasan dan keupayaan substantif rakyat seperti akses pendidikan berkualiti, kesihatan, dan hak bersuara.",
+                    "Pengurangan perbelanjaan awam terhadap sektor pendidikan dan hospital kerajaan."
+                ],
+                correct: 2,
+                explanation: "Cemerlang! Amartya Sen menegaskan bahawa pembangunan sebenar diukur melalui sejauh mana rakyat bebas daripada belenggu kemiskinan, kejahilan, dan penindasan."
+            },
+            {
+                type: "KEPUTUSAN BERETIKA",
+                question: "Sebuah syarikat ingin membina kilang berteknologi tinggi tetapi sisa buangannya berisiko mencemarkan sungai utama kampung berdekatan. Apakah keputusan berasaskan Pembangunan Mampan?",
+                options: [
+                    "Meneruskan projek secara rahsia kerana ia menjana peluang pekerjaan.",
+                    "Mewajibkan sistem rawatan sisa sifar pencemaran, penilaian impak sosial, dan rundingan telus bersama komuniti.",
+                    "Membayar pampasan sekali sahaja kepada ketua kampung tanpa merawat sisa toksik.",
+                    "Memaksa penduduk kampung berpindah tanpa menyediakan penempatan baharu."
+                ],
+                correct: 1,
+                explanation: "Tepat sekali! Etika pembangunan mampan mengimbangi kemajuan ekonomi, kelestarian alam sekitar, dan hak kemanusiaan komuniti setempat."
+            }
+        ]
+    },
+    {
+        id: 3,
+        title: "LEVEL 3 — SOCIAL CRISIS",
+        subtitle: "Kemiskinan Sistemik, Jurang Digital & Marginalisasi",
+        worldTheme: "Cyber Social World",
+        primaryColor: "#FF00AA",
+        secondaryColor: "#FDE047",
+        bgColorTop: "#2b0926",
+        bgColorBottom: "#120411",
+        bpm: 134,
+        speed: 445,
+        length: 7100,
+        questions: [
+            {
+                type: "ANALISIS SOSIAL",
+                question: "Bagaimanakah 'Kemiskinan Sistemik & Multidimensi' memberi kesan langsung kepada pencapaian pendidikan murid di Malaysia?",
+                options: [
+                    "Murid daripada keluarga miskin tidak mempunyai minat semula jadi untuk belajar.",
+                    "Kekurangan nutrisi, ruang belajar sempit, tekanan emosi keluarga, dan kekangan kos pengangkutan menjejaskan fokus pembelajaran.",
+                    "Kemiskinan hanya melibatkan isu ketiadaan wang saku dan tidak memberi kesan kepada kesihatan atau psikologi murid.",
+                    "Semua sekolah di kawasan luar bandar tidak mempunyai guru terlatih."
+                ],
+                correct: 1,
+                explanation: "Tepat! Kemiskinan multidimensi merangkumi kekurangan kesihatan, nutrisi, persekitaran kondusif dan modal sosial yang secara langsung menghambat potensi murid."
+            },
+            {
+                type: "ISU SEMASA MALAYSIA",
+                question: "Apakah yang dimaksudkan dengan 'Jurang Digital' (Digital Divide) dalam ekosistem pendidikan di Malaysia?",
+                options: [
+                    "Perbezaan jenama telefon pintar yang digunakan oleh murid sekolah menengah.",
+                    "Ketidaksamaan akses terhadap capaian internet berkelajuan tinggi, peranti pembelajaran, dan kemahiran literasi digital antara kawasan dan kelas sosial.",
+                    "Larangan penggunaan kalkulator saintifik di dalam dewan peperiksaan.",
+                    "Persaingan antara syarikat telekomunikasi menawarkan pakej data."
+                ],
+                correct: 1,
+                explanation: "Betul! Jurang digital merujuk kepada ketidaksamaan infrastruktur capaian, pemilikan peranti, serta literasi teknologi antara murid bandar, luar bandar, dan pedalaman."
+            },
+            {
+                type: "PEMIKIRAN KRITIS",
+                question: "Kumpulan manakah yang paling berisiko mengalami 'Marginalisasi Pendidikan' sekiranya tiada dasar inklusif dilaksanakan?",
+                options: [
+                    "Murid di sekolah berasrama penuh yang lengkap dengan fasiliti.",
+                    "Kanak-kanak komuniti pedalaman/Orang Asli, murid berkeperluan khas (OKU), dan kanak-kanak daripada keluarga miskin tegar.",
+                    "Pelajar universiti yang menerima biasiswa penuh kerajaan.",
+                    "Murid bandar yang mengikuti kelas tuisyen berbayar."
+                ],
+                correct: 1,
+                explanation: "Syabas! Golongan rentan seperti komuniti pedalaman, OKU, dan miskin tegar memerlukan dasar pendidikan inklusif agar tidak terpinggir daripada arus perdana."
+            }
+        ]
+    },
+    {
+        id: 4,
+        title: "LEVEL 4 — TEACHER HERO",
+        subtitle: "Guru sebagai Agen Perubahan Sosial & Perpaduan",
+        worldTheme: "Neon Castle World",
+        primaryColor: "#FDE047",
+        secondaryColor: "#FF00AA",
+        bgColorTop: "#241905",
+        bgColorBottom: "#120c02",
+        bpm: 138,
+        speed: 460,
+        length: 7300,
+        questions: [
+            {
+                type: "PROFESIONALISME GURU",
+                question: "Apakah peranan seorang guru sebagai 'Equity Advocate' dan 'Agen Perubahan Sosial' di sekolah?",
+                options: [
+                    "Sekadar menghabiskan sukatan pelajaran dan menyerahkan nasib murid lemah kepada ibu bapa.",
+                    "Mengenal pasti halangan pembelajaran murid terpinggir, membela hak pendidikan mereka, dan memupuk mobiliti sosial melalui ilmu.",
+                    "Memberikan tumpuan eksklusif kepada kelas hadapan demi menaikkan gred purata sekolah.",
+                    "Mengelakkan diri daripada memahami latar belakang sosioekonomi murid."
+                ],
+                correct: 1,
+                explanation: "Cemerlang! Guru sebagai agen perubahan sosial bukan sahaja mengajar di bilik darjah, malah menjadi pembela ekuiti yang membuka jalan masa depan murid."
+            },
+            {
+                type: "PEDAGOGI INKLUSIF",
+                question: "Bagaimanakah amalan 'Pedagogi Responsif Budaya' (Culturally Responsive Pedagogy) dapat dilaksanakan oleh guru di Malaysia?",
+                options: [
+                    "Menggunakan contoh, nilai murni, dan konteks kehidupan pelbagai budaya serta etnik di Malaysia secara hormat dan inklusif dalam pengajaran.",
+                    "Memaksa semua murid melupakan identiti budaya warisan masing-masing.",
+                    "Mengasingkan tempat duduk murid di dalam kelas mengikut kaum dan bahasa ibunda.",
+                    "Hanya menggunakan bahan rujukan luar negara tanpa mengaitkannya dengan realiti tempatan."
+                ],
+                correct: 0,
+                explanation: "Tepat! Pedagogi responsif budaya meraikan kepelbagaian latar belakang murid sebagai kekuatan pembelajaran dan jambatan perpaduan nasional."
+            },
+            {
+                type: "INTEGRITI & PERPADUAN",
+                question: "Mengapakah integriti guru amat kritikal dalam membina masyarakat Malaysia yang adil dan bersatu padu?",
+                options: [
+                    "Supaya guru mudah mendapat kenaikan pangkat secara automatik.",
+                    "Kerana sikap adil, bebas prasangka perkauman, dan amanah guru menjadi teladan langsung kepada pembentukan sahsiah generasi masa depan.",
+                    "Supaya murid takut untuk bertanya soalan semasa sesi pengajaran.",
+                    "Kerana integriti hanya diperlukan semasa pemantauan nazir sekolah."
+                ],
+                correct: 1,
+                explanation: "Benar! Bilik darjah ialah cerminan masyarakat masa hadapan; keteladanan dan keadilan guru menyemai benih perpaduan dan integriti dalam diri murid."
+            }
+        ]
+    }
+];
+
+const BOSS_QUESTIONS_DATA = [
+    {
+        title: "KAJIAN KES 1: AGIHAN BANTUAN PERANTI SEKOLAH",
+        question: "Sekolah anda menerima 50 unit tablet sumbangan untuk diagihkan. Terdapat 50 murid keluarga B40/miskin tegar yang tiada peranti langsung di rumah, manakala segelintir pihak mencadangkan cabutan bertuah terbuka kepada semua 500 murid. Berdasarkan prinsip 'Adl, Al-Mizan & Justice as Fairness, apakah keputusan paling wajar?",
+        options: [
+            "Melaksanakan cabutan bertuah supaya semua murid mendapat peluang matematik yang sama.",
+            "Menyerahkan kesemua 50 tablet secara bersasar kepada 50 murid B40/miskin tegar yang paling memerlukan demi merapatkan jurang ekuiti.",
+            "Menyimpan tablet tersebut di bilik guru supaya tidak rosak.",
+            "Memberikan tablet hanya kepada murid yang mendapat semua A dalam peperiksaan."
+        ],
+        correct: 1,
+        explanation: "SERANGAN ILMU BERJAYA! Agihan bersasar mengikut keperluan sebenar merupakan manifestasi Al-Mizan dan ekuiti pendidikan!"
+    },
+    {
+        title: "KAJIAN KES 2: KONFLIK PEMBANGUNAN & HAK KOMUNITI",
+        question: "Sebuah projek pembalakan dan kuari berhampiran perkampungan Orang Asli telah menyebabkan jalan ke sekolah rosak teruk dan sumber air terjejas. Berdasarkan etika Khilafah dan 'Development as Freedom' (Amartya Sen), apakah pendirian beretika?",
+        options: [
+            "Pembangunan ekonomi negeri lebih penting daripada pendidikan segelintir murid pedalaman.",
+            "Pembangunan wajib dihentikan/dikawal selia segera, ekosistem dipulihkan, dan infrastruktur jalan serta akses pendidikan komuniti dijamin.",
+            "Penduduk kampung perlu mencari jalan alternatif sendiri tanpa bantuan pihak berwajib.",
+            "Sekolah di kawasan tersebut patut ditutup terus untuk menjimatkan kos."
+        ],
+        correct: 1,
+        explanation: "PERISAI BOSS RETAK! Pembangunan yang memusnahkan alam dan menyekat akses pendidikan bercanggah dengan amanah Khilafah dan hak kebebasan manusia!"
+    },
+    {
+        title: "KAJIAN KES 3: MENGATASI JURANG DIGITAL DI LUAR BANDAR",
+        question: "Cikgu Faris ditugaskan di sekolah luar bandar yang mana 60% muridnya mengalami masalah capaian internet lemah di rumah. Sebagai 'Equity Advocate', apakah pendekatan paling inklusif?",
+        options: [
+            "Mendenda murid yang gagal menghantar tugasan dalam talian tepat pada masanya.",
+            "Menggabungkan modul pembelajaran luar talian (offline/bercetak) yang interaktif, membuka akses makmal komputer sekolah secara terjadual, dan membimbing literasi digital.",
+            "Mengabaikan penggunaan teknologi sepenuhnya sepanjang tahun persekolahan.",
+            "Menyuruh murid membeli pakej internet satelit yang mahal sendiri."
+        ],
+        correct: 1,
+        explanation: "SERANGAN KRITIKAL! Guru yang cakna merangka alternatif fleksibel agar tiada murid tercicir akibat kekangan infrastruktur digital!"
+    },
+    {
+        title: "KAJIAN KES 4: EMPATI TERHADAP KEMISKINAN MULTIDIMENSI",
+        question: "Seorang murid Tahun 5 sering kelihatan letih dan pakaian sekolahnya lusuh. Siasatan mendapati bapanya terlantar sakit dan murid itu membantu ibunya menyiapkan jualan kuih seawal jam 4 pagi. Apakah tindakan guru yang berintegriti?",
+        options: [
+            "Memarahi murid tersebut di hadapan kelas sebagai pengajaran kepada rakan lain.",
+            "Menyantuni murid dengan empati, menghubungkan keluarga dengan bantuan kebajikan/PIBG/Zakat/KWAPM, serta memberi sokongan akademik terbeza.",
+            "Menggantung persekolahan murid kerana menjejaskan imej kelas.",
+            "Membiarkan sahaja kerana hal keluarga berada di luar pagar sekolah."
+        ],
+        correct: 1,
+        explanation: "TENAGA BOSS MEROSOT! Guru sebagai agen perubahan memahami kesan kemiskinan sistemik dan bertindak melalui jaringan kebajikan serta sokongan ihsan!"
+    },
+    {
+        title: "KAJIAN KES 5: MEMBINA PERPADUAN MELALUI PEDAGOGI",
+        question: "Di dalam sebuah kelas pelbagai kaum dan kelas sosioekonomi, murid cenderung duduk dan membuat kerja kumpulan hanya bersama kelompok etnik sendiri. Bagaimanakah guru melaksanakan 'Pedagogi Responsif Budaya'?",
+        options: [
+            "Membiarkan pengasingan itu kerana murid lebih selesa bersama rakan sekaum.",
+            "Mereka bentuk projek pembelajaran koperatif silang budaya yang memerlukan kerjasama pelbagai etnik serta mengaitkan nilai sepunya masyarakat Malaysia.",
+            "Melarang murid bercakap antara satu sama lain sepanjang waktu persekolahan.",
+            "Memberikan markah lebih tinggi kepada kumpulan majoriti."
+        ],
+        correct: 1,
+        explanation: "KEMENANGAN MUTLAK! Melalui pedagogi responsif budaya dan pembelajaran koperatif, bilik darjah menjadi medan penyatuan bangsa yang adil dan harmoni!"
+    }
+];
+
+// ============================================================================
+// 2. AUDIO MANAGER (WEB AUDIO API SYNTHESIZER & BEAT PULSE ENGINE)
+// ============================================================================
+const AudioManager = {
+    ctx: null,
+    musicEnabled: true,
+    sfxEnabled: true,
+    volume: 0.75,
+    isPlayingMusic: false,
+    bpm: 128,
+    stepIndex: 0,
+    nextNoteTime: 0,
+    beatPulse: 0, // 0.0 to 1.0, decays smoothly each frame
+    visualizerData: new Array(16).fill(0.1),
+    currentThemeIndex: 0,
+
+    init() {
+        if (!this.ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtx) {
+                this.ctx = new AudioCtx();
+            }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume();
+        }
+    },
+
+    startMusic(bpm = 128, themeIndex = 0) {
+        this.init();
+        this.bpm = bpm;
+        this.currentThemeIndex = themeIndex;
+        if (!this.ctx) return;
+        this.isPlayingMusic = true;
+        this.nextNoteTime = this.ctx.currentTime + 0.05;
+    },
+
+    stopMusic() {
+        this.isPlayingMusic = false;
+    },
+
+    updateScheduler(dt) {
+        // Decay beatPulse smoothly
+        this.beatPulse = Math.max(0, this.beatPulse - dt * 3.8);
+
+        // Animate visualizer bars
+        for (let i = 0; i < this.visualizerData.length; i++) {
+            this.visualizerData[i] = Math.max(0.1, this.visualizerData[i] - dt * 2.4);
+        }
+
+        if (!this.isPlayingMusic || !this.musicEnabled || !this.ctx) return;
+
+        const secondsPerBeat = 60.0 / this.bpm;
+        const sixteenthTime = secondsPerBeat / 4;
+
+        while (this.nextNoteTime < this.ctx.currentTime + 0.1) {
+            this.scheduleStep(this.stepIndex, this.nextNoteTime);
+            this.nextNoteTime += sixteenthTime;
+            this.stepIndex = (this.stepIndex + 1) % 16;
+        }
+    },
+
+    scheduleStep(step, time) {
+        // Quarter note kick beat (steps 0, 4, 8, 12)
+        if (step % 4 === 0) {
+            this.playKick(time);
+            this.beatPulse = 1.0;
+            for (let i = 0; i < this.visualizerData.length; i++) {
+                this.visualizerData[i] = 0.4 + Math.random() * 0.6;
+            }
+        }
+        // Off-beat snare / clap (steps 4, 12)
+        if (step === 4 || step === 12) {
+            this.playSnare(time);
+        }
+        // Hi-hat on odd sixteenths
+        if (step % 2 === 1) {
+            this.playHiHat(time);
+        }
+
+        // Melodic synth bass & arpeggio per level theme
+        const scales = [
+            [220, 261.63, 293.66, 329.63, 392.00, 440], // A minor (Level 1)
+            [196, 246.94, 293.66, 329.63, 392.00, 493.88], // G major/pentatonic (Level 2)
+            [207.65, 246.94, 277.18, 311.13, 369.99, 415.30], // G# minor cyber (Level 3)
+            [261.63, 293.66, 329.63, 392.00, 440.00, 523.25]  // C major heroic (Level 4)
+        ];
+        const scale = scales[this.currentThemeIndex % scales.length];
+        const pattern = [0, 2, 4, 2, 1, 3, 5, 3, 0, 2, 4, 5, 4, 3, 2, 1];
+        const freq = scale[pattern[step]];
+
+        if (step % 2 === 0) {
+            this.playSynthNote(freq, time, 0.11, 'sawtooth', 0.12);
+        } else {
+            this.playSynthNote(freq * 2, time, 0.07, 'square', 0.06);
+        }
+    },
+
+    playKick(time) {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.frequency.setValueAtTime(135, time);
+        osc.frequency.exponentialRampToValueAtTime(35, time + 0.12);
+        gain.gain.setValueAtTime(0.35 * this.volume, time);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.14);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(time);
+        osc.stop(time + 0.15);
+    },
+
+    playSnare(time) {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(220, time);
+        osc.frequency.exponentialRampToValueAtTime(80, time + 0.09);
+        gain.gain.setValueAtTime(0.18 * this.volume, time);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(time);
+        osc.stop(time + 0.1);
+    },
+
+    playHiHat(time) {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(860, time);
+        gain.gain.setValueAtTime(0.04 * this.volume, time);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(time);
+        osc.stop(time + 0.045);
+    },
+
+    playSynthNote(freq, time, duration, type = 'sawtooth', baseGain = 0.1) {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, time);
+        gain.gain.setValueAtTime(baseGain * this.volume, time);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(time);
+        osc.stop(time + duration);
+    },
+
+    playSFX(type) {
+        if (!this.sfxEnabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+
+        if (type === 'jump') {
+            this.playToneSweep(240, 580, 0.11, 'square', 0.2);
+        } else if (type === 'coin') {
+            this.playToneSweep(880, 1320, 0.09, 'sine', 0.22);
+        } else if (type === 'secret_coin') {
+            this.playToneSweep(587, 1760, 0.22, 'triangle', 0.28);
+        } else if (type === 'gate') {
+            this.playToneSweep(330, 660, 0.25, 'sawtooth', 0.24);
+        } else if (type === 'correct') {
+            this.playToneSweep(523.25, 1046.5, 0.28, 'triangle', 0.3);
+        } else if (type === 'wrong') {
+            this.playToneSweep(220, 110, 0.3, 'sawtooth', 0.3);
+        } else if (type === 'crash') {
+            this.playToneSweep(160, 45, 0.35, 'sawtooth', 0.35);
+        } else if (type === 'victory') {
+            const notes = [523.25, 659.25, 783.99, 1046.5];
+            notes.forEach((n, idx) => {
+                this.playSynthNote(n, now + idx * 0.11, 0.22, 'triangle', 0.28);
+            });
+        }
+    },
+
+    playToneSweep(startFreq, endFreq, duration, type, maxGain) {
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(startFreq, now);
+        osc.frequency.exponentialRampToValueAtTime(endFreq, now + duration);
+        gain.gain.setValueAtTime(maxGain * this.volume, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + duration + 0.01);
+    }
+};
+
+// ============================================================================
+// 3. REWARD & PERSISTENT STATE MANAGER
+// ============================================================================
+const SaveState = {
+    totalXP: 0,
+    highScore: 0,
+    totalCoinsCollected: 0,
+    selectedSkin: 'cyan',
+    unlockedLevels: [1, 2, 3, 4], // All 4 unlocked by default for seamless classroom & student play, stars track mastery
+    levelStars: { 1: 0, 2: 0, 3: 0, 4: 0 },
+    bossDefeated: false,
+    achievements: {},
+    correctStreak: 0,
+
+    load() {
+        try {
+            const raw = localStorage.getItem('topik9_rhythm_dash_save_v1');
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                Object.assign(this, parsed);
+            }
+        } catch (e) {
+            console.warn('LocalStorage unavailable, using in-memory state.');
+        }
+    },
+
+    save() {
+        try {
+            localStorage.setItem('topik9_rhythm_dash_save_v1', JSON.stringify({
+                totalXP: this.totalXP,
+                highScore: this.highScore,
+                totalCoinsCollected: this.totalCoinsCollected,
+                selectedSkin: this.selectedSkin,
+                unlockedLevels: this.unlockedLevels,
+                levelStars: this.levelStars,
+                bossDefeated: this.bossDefeated,
+                achievements: this.achievements,
+                correctStreak: this.correctStreak
+            }));
+        } catch (e) {}
+    },
+
+    reset() {
+        this.totalXP = 0;
+        this.highScore = 0;
+        this.totalCoinsCollected = 0;
+        this.selectedSkin = 'cyan';
+        this.unlockedLevels = [1];
+        this.levelStars = { 1: 0, 2: 0, 3: 0, 4: 0 };
+        this.bossDefeated = false;
+        this.achievements = {};
+        this.correctStreak = 0;
+        this.save();
+    },
+
+    getRankTitle() {
+        if (this.bossDefeated || this.totalXP >= 1500) return "LEGENDA IMPAK SOSIAL";
+        if (this.totalXP >= 1000) return "WIRA PENDIDIKAN MADANI";
+        if (this.totalXP >= 600) return "PEJUANG EKUITI";
+        if (this.totalXP >= 250) return "PENGGERAK AL-MIZAN";
+        return "PERINTIS KEADILAN";
+    },
+
+    unlockAchievement(id) {
+        if (this.achievements[id]) return;
+        this.achievements[id] = true;
+        this.save();
+        const badge = ACHIEVEMENTS_DATA.find(a => a.id === id);
+        if (badge) {
+            const toast = document.getElementById('achievement-toast');
+            document.getElementById('toast-icon').textContent = badge.icon;
+            document.getElementById('toast-title').textContent = badge.title;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3200);
+        }
+    }
+};
+
+// ============================================================================
+// 4. GAME ENGINE STATE & ENTITIES
+// ============================================================================
+const canvas = document.getElementById('game-canvas');
+const ctx = canvas.getContext('2d');
+
+const Game = {
+    state: 'MENU', // MENU, PLAYING, QUIZ, PAUSED, GAMEOVER, VICTORY, BOSS
+    currentLevelIndex: 0,
+    levelData: LEVELS_DATA[0],
+    score: 0,
+    coins: 0,
+    sessionXP: 0,
+    deathsInLevel: 0,
+    quizAttempts: 0,
+    quizCorrectFirstTry: 0,
+    assistAutoJump: false,
+
+    // Camera & World coordinates
+    cameraX: 0,
+    groundY: 0,
+    checkpointX: 0,
+    checkpointScore: 0,
+    checkpointCoins: 0,
+    screenShake: 0,
+    lastTimestamp: 0,
+
+    // Player Cube Entity
+    player: {
+        x: 160,
+        y: 0,
+        size: 44,
+        vy: 0,
+        gravity: 2450,
+        jumpForce: -830,
+        isGrounded: false,
+        rotation: 0,
+        targetRotation: 0,
+        coyoteTimer: 0,
+        jumpBufferTimer: 0,
+        isHoldingJump: false,
+        alive: true,
+        trail: []
+    },
+
+    // Level Objects
+    obstacles: [],
+    coinsList: [],
+    quizGates: [],
+    portals: [],
+    particles: [],
+    floatingTexts: [],
+    confetti: [],
+
+    // Active Quiz Gate Reference
+    activeGate: null,
+    currentGateQuestionAnsweredOnFirstTry: true,
+
+    // Final Boss State
+    bossState: {
+        caseIndex: 0,
+        hp: 100,
+        pulseAngle: 0
+    }
+};
+
+// ============================================================================
+// 5. REQUIRED CORE FUNCTIONS (AS SPECIFIED IN MASTER PROMPT)
+// ============================================================================
+
+function initGame() {
+    SaveState.load();
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    setupInputHandlers();
+    setupUIEventListeners();
+    updateMainMenuUI();
+    requestAnimationFrame(gameLoop);
+}
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    Game.groundY = Math.floor(canvas.height * 0.78);
+    if (Game.state === 'MENU' || Game.state === 'PLAYING') {
+        if (Game.player.y > Game.groundY - Game.player.size) {
+            Game.player.y = Game.groundY - Game.player.size;
+        }
+    }
+}
+
+function startGame(levelIdx = 0) {
+    Game.currentLevelIndex = levelIdx;
+    Game.levelData = LEVELS_DATA[levelIdx];
+    Game.score = 0;
+    Game.coins = 0;
+    Game.sessionXP = 0;
+    Game.deathsInLevel = 0;
+    Game.quizAttempts = 0;
+    Game.quizCorrectFirstTry = 0;
+    Game.checkpointX = 0;
+    Game.checkpointScore = 0;
+    Game.checkpointCoins = 0;
+
+    spawnObstacles(Game.levelData);
+    resetPlayerPosition(0);
+
+    Game.state = 'PLAYING';
+    hideAllScreens();
+    document.getElementById('hud-layer').classList.add('active');
+    document.getElementById('hud-level-name').textContent = Game.levelData.title;
+
+    updateScore(0);
+    updateXP(0);
+    updateProgress();
+
+    AudioManager.startMusic(Game.levelData.bpm, levelIdx);
+}
+
+function resetPlayerPosition(startX = 0) {
+    Game.cameraX = startX;
+    Game.player.x = startX + Math.min(200, Math.floor(canvas.width * 0.22));
+    Game.player.y = Game.groundY - Game.player.size;
+    Game.player.vy = 0;
+    Game.player.isGrounded = true;
+    Game.player.rotation = 0;
+    Game.player.targetRotation = 0;
+    Game.player.coyoteTimer = 0;
+    Game.player.jumpBufferTimer = 0;
+    Game.player.alive = true;
+    Game.player.trail = [];
+}
+
+function spawnObstacles(level) {
+    Game.obstacles = [];
+    Game.coinsList = [];
+    Game.quizGates = [];
+    Game.portals = [];
+    Game.particles = [];
+    Game.floatingTexts = [];
+
+    const len = level.length;
+    const gatePositions = [
+        Math.floor(len * 0.28),
+        Math.floor(len * 0.58),
+        Math.floor(len * 0.85)
+    ];
+
+    // Create the 3 Quiz Gates
+    gatePositions.forEach((gx, idx) => {
+        Game.quizGates.push({
+            x: gx,
+            width: 56,
+            gateIndex: idx,
+            questionData: level.questions[idx],
+            cleared: false
+        });
+        // Add a Reward Portal right after each Quiz Gate
+        Game.portals.push({
+            x: gx + 220,
+            yOffset: 0,
+            width: 44,
+            height: 130,
+            type: 'REWARD_BOOST',
+            triggered: false
+        });
+    });
+
+    // Add Level Completion Portal at the end
+    Game.portals.push({
+        x: len - 150,
+        yOffset: 0,
+        width: 72,
+        height: 190,
+        type: 'GOAL_PORTAL',
+        triggered: false
+    });
+
+    // Deterministically generate varied rhythmic obstacle patterns between gates
+    let cursorX = 680;
+    let patternSeed = level.id * 17;
+
+    while (cursorX < len - 380) {
+        // Keep a safe buffer zone around Quiz Gates and Reward Portals
+        const nearGate = gatePositions.some(gx => Math.abs(cursorX - gx) < 350 || Math.abs(cursorX - (gx + 220)) < 250);
+        if (nearGate) {
+            cursorX += 160;
+            continue;
+        }
+
+        patternSeed = (patternSeed * 31 + 13) % 100;
+        const patternType = patternSeed % 6;
+
+        if (patternType === 0) {
+            // 1. Single Neon Spike + Coin Arc above
+            Game.obstacles.push({
+                type: 'SPIKE',
+                x: cursorX,
+                yOffset: 0,
+                w: 40,
+                h: 42
+            });
+            addCoinArc(cursorX - 30, cursorX + 70, 95, 3, 'NORMAL');
+            cursorX += 380;
+        } else if (patternType === 1) {
+            // 2. Double Spikes + Cluster Coin reward
+            Game.obstacles.push({
+                type: 'DOUBLE_SPIKE',
+                x: cursorX,
+                yOffset: 0,
+                w: 76,
+                h: 42
+            });
+            addCoinArc(cursorX - 20, cursorX + 95, 115, 3, 'CLUSTER');
+            cursorX += 430;
+        } else if (patternType === 2) {
+            // 3. Stepped Geometric Block Platforms + Hidden Coin on High Route
+            Game.obstacles.push({
+                type: 'BLOCK',
+                x: cursorX,
+                yOffset: 0,
+                w: 90,
+                h: 52
+            });
+            Game.obstacles.push({
+                type: 'ELEVATED_PLATFORM',
+                x: cursorX + 160,
+                yOffset: 95,
+                w: 120,
+                h: 24
+            });
+            // Hidden Secret Coin high above the elevated platform
+            Game.coinsList.push({
+                x: cursorX + 220,
+                yOffset: 175,
+                radius: 16,
+                kind: 'HIDDEN',
+                value: 100,
+                collected: false
+            });
+            cursorX += 460;
+        } else if (patternType === 3) {
+            // 4. Elevated Hover Platform over floor spikes
+            Game.obstacles.push({
+                type: 'ELEVATED_PLATFORM',
+                x: cursorX,
+                yOffset: 75,
+                w: 150,
+                h: 24
+            });
+            Game.obstacles.push({
+                type: 'SPIKE',
+                x: cursorX + 55,
+                yOffset: 0,
+                w: 40,
+                h: 40
+            });
+            addCoinArc(cursorX + 20, cursorX + 130, 125, 3, 'NORMAL');
+            cursorX += 420;
+        } else if (patternType === 4) {
+            // 5. Moving Cyber Obstacle (oscillates vertically)
+            Game.obstacles.push({
+                type: 'MOVING_OBSTACLE',
+                x: cursorX,
+                yOffset: 20,
+                baseYOffset: 22,
+                range: 32,
+                speed: 3.5,
+                w: 44,
+                h: 44
+            });
+            Game.coinsList.push({
+                x: cursorX + 22,
+                yOffset: 135,
+                radius: 13,
+                kind: 'CLUSTER',
+                value: 50,
+                collected: false
+            });
+            cursorX += 400;
+        } else {
+            // 6. Rhythm Coin Staircase with safe block
+            Game.obstacles.push({
+                type: 'BLOCK',
+                x: cursorX,
+                yOffset: 0,
+                w: 80,
+                h: 46
+            });
+            addCoinArc(cursorX, cursorX + 80, 90, 2, 'NORMAL');
+            cursorX += 350;
+        }
+    }
+}
+
+function addCoinArc(startX, endX, peakYOffset, count, kind) {
+    for (let i = 0; i < count; i++) {
+        const t = count === 1 ? 0.5 : i / (count - 1);
+        const cx = startX + (endX - startX) * t;
+        const arcFactor = Math.sin(t * Math.PI);
+        const cyOffset = 40 + arcFactor * (peakYOffset - 40);
+        Game.coinsList.push({
+            x: cx,
+            yOffset: cyOffset,
+            radius: kind === 'CLUSTER' ? 13 : 11,
+            kind: kind,
+            value: kind === 'CLUSTER' ? 50 : 10,
+            collected: false
+        });
+    }
+}
+
+function handleJump() {
+    if (Game.state !== 'PLAYING' || !Game.player.alive) return;
+    Game.player.jumpBufferTimer = 0.14; // 140ms jump buffer
+}
+
+function executePlayerJump() {
+    Game.player.vy = Game.player.jumpForce;
+    Game.player.isGrounded = false;
+    Game.player.coyoteTimer = 0;
+    Game.player.jumpBufferTimer = 0;
+    Game.player.targetRotation += Math.PI / 2;
+
+    AudioManager.playSFX('jump');
+    SaveState.unlockAchievement('first_jump');
+
+    // Spawn jump burst particles
+    for (let i = 0; i < 10; i++) {
+        Game.particles.push({
+            x: Game.player.x + Game.player.size / 2,
+            y: Game.player.y + Game.player.size,
+            vx: (Math.random() - 0.5) * 180,
+            vy: -Math.random() * 140,
+            size: 5 + Math.random() * 5,
+            color: Game.levelData.primaryColor,
+            life: 0.45
+        });
+    }
+}
+
+function applyGravity(dt) {
+    const p = Game.player;
+    p.vy += p.gravity * dt;
+    p.y += p.vy * dt;
+
+    // Ground collision
+    const floorTop = Game.groundY - p.size;
+    if (p.y >= floorTop) {
+        p.y = floorTop;
+        p.vy = 0;
+        if (!p.isGrounded) {
+            p.isGrounded = true;
+            // Snap rotation to nearest 90 degrees on landing
+            p.rotation = Math.round(p.rotation / (Math.PI / 2)) * (Math.PI / 2);
+            p.targetRotation = p.rotation;
+        }
+    } else {
+        if (p.isGrounded) {
+            p.coyoteTimer = 0.09; // 90ms coyote time after leaving ledge
+        }
+        p.isGrounded = false;
+    }
+
+    // Rotate cube smoothly while airborne
+    if (!p.isGrounded) {
+        p.rotation += 6.8 * dt;
+    }
+}
+
+function detectCollision(dt) {
+    const p = Game.player;
+    const speed = Game.levelData.speed;
+
+    // Assist Mode (Auto-Jump for classroom presentations or accessibility)
+    if (Game.assistAutoJump && p.isGrounded) {
+        const lookAhead = speed * 0.27;
+        const upcomingHazard = Game.obstacles.find(ob => {
+            const dist = ob.x - (p.x + p.size);
+            return dist > -10 && dist < lookAhead && (ob.type === 'SPIKE' || ob.type === 'DOUBLE_SPIKE' || ob.type === 'MOVING_OBSTACLE' || ob.type === 'BLOCK');
+        });
+        if (upcomingHazard) {
+            executePlayerJump();
+        }
+    }
+
+    // Update moving obstacles & check collisions
+    const px1 = p.x + 6;
+    const py1 = p.y + 6;
+    const px2 = p.x + p.size - 6;
+    const py2 = p.y + p.size - 4;
+
+    for (const ob of Game.obstacles) {
+        if (ob.type === 'MOVING_OBSTACLE') {
+            ob.yOffset = ob.baseYOffset + Math.sin(performance.now() * 0.0045) * ob.range;
+        }
+
+        const obLeft = ob.x;
+        const obRight = ob.x + ob.w;
+        const obBottom = Game.groundY - ob.yOffset;
+        const obTop = obBottom - ob.h;
+
+        // Skip distant obstacles
+        if (obRight < p.x - 50 || obLeft > p.x + 200) continue;
+
+        if (ob.type === 'BLOCK' || ob.type === 'ELEVATED_PLATFORM') {
+            // Check if player lands on top of the platform/block
+            const prevBottom = (p.y - p.vy * dt) + p.size;
+            const horizontalOverlap = (px2 > obLeft + 4) && (px1 < obRight - 4);
+
+            if (horizontalOverlap && p.vy >= 0 && prevBottom <= obTop + 18 && (p.y + p.size) >= obTop) {
+                p.y = obTop - p.size;
+                p.vy = 0;
+                p.isGrounded = true;
+                p.rotation = Math.round(p.rotation / (Math.PI / 2)) * (Math.PI / 2);
+                continue;
+            }
+
+            // If it's a solid BLOCK and player hits front face firmly
+            if (ob.type === 'BLOCK') {
+                const verticalHit = (py2 > obTop + 12) && (py1 < obBottom - 4);
+                if (horizontalOverlap && verticalHit) {
+                    if (Game.assistAutoJump) {
+                        // In Assist Mode, step up gracefully
+                        p.y = obTop - p.size;
+                        p.vy = 0;
+                        p.isGrounded = true;
+                    } else {
+                        triggerPlayerCrash();
+                        return;
+                    }
+                }
+            }
+        } else {
+            // SPIKE, DOUBLE_SPIKE, MOVING_OBSTACLE (Forgiving inner hitbox)
+            const hazardLeft = obLeft + 8;
+            const hazardRight = obRight - 8;
+            const hazardTop = obTop + 10;
+            const hazardBottom = obBottom - 4;
+
+            if (px2 > hazardLeft && px1 < hazardRight && py2 > hazardTop && py1 < hazardBottom) {
+                if (Game.assistAutoJump) {
+                    executePlayerJump();
+                } else {
+                    triggerPlayerCrash();
+                    return;
+                }
+            }
+        }
+    }
+
+    // Check Coin Collection
+    for (const coin of Game.coinsList) {
+        if (coin.collected) continue;
+        const coinY = Game.groundY - coin.yOffset - coin.radius;
+        const dx = (p.x + p.size / 2) - coin.x;
+        const dy = (p.y + p.size / 2) - coinY;
+        const dist = Math.hypot(dx, dy);
+        if (dist < p.size * 0.65 + coin.radius) {
+            collectCoin(coin);
+        }
+    }
+
+    // Check Quiz Gates
+    for (const gate of Game.quizGates) {
+        if (!gate.cleared && (p.x + p.size) >= gate.x) {
+            showQuizGate(gate);
+            return;
+        }
+    }
+
+    // Check Portals (Reward Boost & Level Completion Goal)
+    for (const portal of Game.portals) {
+        if (!portal.triggered && (p.x + p.size) >= portal.x) {
+            portal.triggered = true;
+            if (portal.type === 'REWARD_BOOST') {
+                AudioManager.playSFX('secret_coin');
+                updateScore(100);
+                spawnFloatingText(p.x, p.y - 30, "PORTAL BONUS +100!", "#00FF66");
+                for (let i = 0; i < 18; i++) {
+                    Game.particles.push({
+                        x: portal.x,
+                        y: Game.groundY - 60,
+                        vx: (Math.random() - 0.5) * 260,
+                        vy: (Math.random() - 0.5) * 260,
+                        size: 6,
+                        color: '#00FF66',
+                        life: 0.65
+                    });
+                }
+            } else if (portal.type === 'GOAL_PORTAL') {
+                completeLevel();
+                return;
+            }
+        }
+    }
+}
+
+function collectCoin(coin) {
+    coin.collected = true;
+    Game.coins += 1;
+    SaveState.totalCoinsCollected += 1;
+    updateScore(coin.value);
+
+    if (coin.kind === 'HIDDEN') {
+        AudioManager.playSFX('secret_coin');
+        spawnFloatingText(coin.x, Game.groundY - coin.yOffset, `HIDDEN COIN +${coin.value}!`, "#00F5FF");
+    } else if (coin.kind === 'CLUSTER') {
+        AudioManager.playSFX('coin');
+        spawnFloatingText(coin.x, Game.groundY - coin.yOffset, `+${coin.value}`, "#FF00AA");
+    } else {
+        AudioManager.playSFX('coin');
+        spawnFloatingText(coin.x, Game.groundY - coin.yOffset, `+${coin.value}`, "#FDE047");
+    }
+
+    document.getElementById('hud-coins').textContent = Game.coins;
+
+    if (SaveState.totalCoinsCollected >= 15 || Game.coins >= 15) {
+        SaveState.unlockAchievement('coin_dasher');
+    }
+
+    for (let i = 0; i < 8; i++) {
+        Game.particles.push({
+            x: coin.x,
+            y: Game.groundY - coin.yOffset,
+            vx: (Math.random() - 0.5) * 160,
+            vy: (Math.random() - 0.5) * 160,
+            size: 5,
+            color: '#FDE047',
+            life: 0.4
+        });
+    }
+}
+
+function triggerPlayerCrash() {
+    Game.player.alive = false;
+    Game.deathsInLevel += 1;
+    Game.screenShake = 14;
+    AudioManager.playSFX('crash');
+    AudioManager.stopMusic();
+
+    // Non-graphic geometric pixel burst
+    for (let i = 0; i < 28; i++) {
+        Game.particles.push({
+            x: Game.player.x + Game.player.size / 2,
+            y: Game.player.y + Game.player.size / 2,
+            vx: (Math.random() - 0.5) * 420,
+            vy: (Math.random() - 0.5) * 420,
+            size: 6 + Math.random() * 6,
+            color: i % 2 === 0 ? Game.levelData.primaryColor : '#FDE047',
+            life: 0.75
+        });
+    }
+
+    setTimeout(() => {
+        if (Game.state === 'PLAYING') {
+            Game.state = 'GAMEOVER';
+            const accuracy = Game.quizAttempts === 0 ? 100 : Math.round((Game.quizCorrectFirstTry / Game.quizAttempts) * 100);
+            const prog = Math.min(100, Math.floor((Game.player.x / Game.levelData.length) * 100));
+            document.getElementById('gameover-score').textContent = Game.score;
+            document.getElementById('gameover-coins').textContent = Game.coins;
+            document.getElementById('gameover-accuracy').textContent = `${accuracy}%`;
+            document.getElementById('gameover-progress').textContent = `${prog}%`;
+            showScreen('screen-game-over');
+        }
+    }, 550);
+}
+
+// ============================================================================
+// 6. QUIZ ENGINE & BOSS CHALLENGE FUNCTIONS
+// ============================================================================
+
+function showQuizGate(gate) {
+    Game.state = 'QUIZ';
+    Game.activeGate = gate;
+    Game.currentGateQuestionAnsweredOnFirstTry = true;
+    Game.player.isHoldingJump = false;
+    AudioManager.playSFX('gate');
+
+    const q = gate.questionData;
+    document.getElementById('quiz-gate-category').textContent = `QUIZ GATE ${gate.gateIndex + 1}/3 // ${Game.levelData.title}`;
+    document.getElementById('quiz-gate-type').textContent = q.type;
+    document.getElementById('quiz-question-text').textContent = q.question;
+
+    const optionsContainer = document.getElementById('quiz-options-container');
+    optionsContainer.innerHTML = '';
+
+    const keys = ['A', 'B', 'C', 'D'];
+    q.options.forEach((optText, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-option-btn';
+        btn.innerHTML = `<span class="option-key">${keys[idx]}</span> <span>${optText}</span>`;
+        btn.addEventListener('click', () => submitAnswer(idx, btn));
+        optionsContainer.appendChild(btn);
+    });
+
+    document.getElementById('quiz-feedback-box').classList.remove('active');
+    document.getElementById('btn-quiz-retry').style.display = 'none';
+    document.getElementById('btn-quiz-continue').style.display = 'none';
+
+    showScreen('screen-quiz-gate');
+}
+
+function submitAnswer(selectedIndex, clickedBtn) {
+    const gate = Game.activeGate;
+    if (!gate) return;
+    const q = gate.questionData;
+
+    const allBtns = document.querySelectorAll('#quiz-options-container .quiz-option-btn');
+    allBtns.forEach(b => b.disabled = true);
+
+    const feedbackBox = document.getElementById('quiz-feedback-box');
+    const feedbackTitle = document.getElementById('quiz-feedback-title');
+    const feedbackDesc = document.getElementById('quiz-feedback-desc');
+    feedbackBox.classList.add('active');
+
+    if (selectedIndex === q.correct) {
+        clickedBtn.classList.add('correct');
+        AudioManager.playSFX('correct');
+
+        feedbackBox.style.background = '#d1fae5';
+        feedbackTitle.style.color = '#065f46';
+        feedbackTitle.textContent = '✅ JAWAPAN TEPAT! PORTAL DIBUKA (+200 PTS & +100 XP)';
+        feedbackDesc.textContent = q.explanation;
+
+        if (Game.currentGateQuestionAnsweredOnFirstTry) {
+            Game.quizAttempts += 1;
+            Game.quizCorrectFirstTry += 1;
+            SaveState.correctStreak += 1;
+            if (SaveState.correctStreak >= 3) {
+                SaveState.unlockAchievement('quiz_master');
+            }
+        } else {
+            Game.quizAttempts += 1;
+        }
+
+        updateScore(200);
+        updateXP(100);
+
+        document.getElementById('btn-quiz-retry').style.display = 'none';
+        document.getElementById('btn-quiz-continue').style.display = 'inline-flex';
+    } else {
+        clickedBtn.classList.add('wrong');
+        AudioManager.playSFX('wrong');
+        Game.currentGateQuestionAnsweredOnFirstTry = false;
+        SaveState.correctStreak = 0;
+
+        feedbackBox.style.background = '#ffe4e6';
+        feedbackTitle.style.color = '#9f1239';
+        feedbackTitle.textContent = '❌ KURANG TEPAT — MARI FAHAMI KONSEP INI:';
+        feedbackDesc.textContent = "Teliti semula kaitan soalan dengan prinsip keadilan sosial, etika kemanusiaan, dan peranan pendidik sebelum mencuba semula.";
+
+        document.getElementById('btn-quiz-retry').style.display = 'inline-flex';
+        document.getElementById('btn-quiz-continue').style.display = 'none';
+    }
+}
+
+function updateScore(pointsDelta) {
+    Game.score += pointsDelta;
+    if (Game.score > SaveState.highScore) {
+        SaveState.highScore = Game.score;
+    }
+    document.getElementById('hud-score').textContent = Game.score;
+}
+
+function updateXP(xpDelta) {
+    Game.sessionXP += xpDelta;
+    SaveState.totalXP += xpDelta;
+    SaveState.save();
+    document.getElementById('hud-xp').textContent = SaveState.totalXP;
+}
+
+function updateProgress() {
+    if (!Game.levelData) return;
+    const pct = Math.min(100, Math.max(0, Math.floor((Game.player.x / Game.levelData.length) * 100)));
+    document.getElementById('hud-progress-bar').style.width = `${pct}%`;
+    document.getElementById('hud-progress-text').textContent = `PROGRESS: ${pct}%`;
+}
+
+function completeLevel() {
+    Game.state = 'VICTORY';
+    AudioManager.stopMusic();
+    AudioManager.playSFX('victory');
+
+    // Level completion rewards
+    let bonusPts = 500;
+    let bonusXP = 250;
+
+    if (Game.deathsInLevel === 0) {
+        bonusPts += 250; // Perfect level bonus
+        bonusXP += 100;
+        SaveState.unlockAchievement('perfect_rhythm');
+    }
+
+    updateScore(bonusPts);
+    updateXP(bonusXP);
+
+    // Calculate star rating (1 to 3 stars)
+    let stars = 3;
+    if (Game.deathsInLevel > 2 || Game.quizCorrectFirstTry < 2) stars = 2;
+    if (Game.deathsInLevel > 5 && Game.quizCorrectFirstTry < 1) stars = 1;
+
+    const lvlId = Game.levelData.id;
+    SaveState.levelStars[lvlId] = Math.max(SaveState.levelStars[lvlId] || 0, stars);
+
+    // Unlock next level
+    if (lvlId < 4 && !SaveState.unlockedLevels.includes(lvlId + 1)) {
+        SaveState.unlockedLevels.push(lvlId + 1);
+    }
+
+    // Check if all 4 levels completed
+    const allDone = [1, 2, 3, 4].every(id => (SaveState.levelStars[id] || 0) > 0);
+    if (allDone) {
+        SaveState.unlockAchievement('justice_hero');
+    }
+
+    SaveState.save();
+    showVictoryScreen(false, stars);
+}
+
+function startBossChallenge() {
+    Game.state = 'BOSS';
+    Game.bossState.caseIndex = 0;
+    Game.bossState.hp = 100;
+    hideAllScreens();
+    document.getElementById('hud-layer').classList.remove('active');
+    showScreen('screen-boss-challenge');
+    AudioManager.startMusic(140, 2);
+    renderBossCaseQuestion();
+}
+
+function renderBossCaseQuestion() {
+    const idx = Game.bossState.caseIndex;
+    const caseData = BOSS_QUESTIONS_DATA[idx];
+
+    document.getElementById('boss-case-counter').textContent = `KAJIAN KES ${idx + 1} / ${BOSS_QUESTIONS_DATA.length}`;
+    document.getElementById('boss-hp-text').textContent = `HP: ${Game.bossState.hp}%`;
+    document.getElementById('boss-hp-fill').style.width = `${Game.bossState.hp}%`;
+    document.getElementById('boss-question-text').innerHTML = `<div style="color:var(--electric-purple); font-family:var(--font-display); margin-bottom:4px;">${caseData.title}</div>${caseData.question}`;
+
+    const container = document.getElementById('boss-options-container');
+    container.innerHTML = '';
+
+    const keys = ['A', 'B', 'C', 'D'];
+    caseData.options.forEach((opt, optIdx) => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-option-btn';
+        btn.innerHTML = `<span class="option-key">${keys[optIdx]}</span> <span>${opt}</span>`;
+        btn.addEventListener('click', () => handleBossAnswer(optIdx, btn));
+        container.appendChild(btn);
+    });
+
+    document.getElementById('boss-feedback-box').classList.remove('active');
+    document.getElementById('btn-boss-retry').style.display = 'none';
+    document.getElementById('btn-boss-next').style.display = 'none';
+}
+
+function handleBossAnswer(selectedIdx, btn) {
+    const caseData = BOSS_QUESTIONS_DATA[Game.bossState.caseIndex];
+    const allBtns = document.querySelectorAll('#boss-options-container .quiz-option-btn');
+    allBtns.forEach(b => b.disabled = true);
+
+    const fbBox = document.getElementById('boss-feedback-box');
+    const fbTitle = document.getElementById('boss-feedback-title');
+    const fbDesc = document.getElementById('boss-feedback-desc');
+    fbBox.classList.add('active');
+
+    if (selectedIdx === caseData.correct) {
+        btn.classList.add('correct');
+        AudioManager.playSFX('correct');
+        Game.bossState.hp = Math.max(0, Game.bossState.hp - 20);
+        document.getElementById('boss-hp-text').textContent = `HP: ${Game.bossState.hp}%`;
+        document.getElementById('boss-hp-fill').style.width = `${Game.bossState.hp}%`;
+
+        updateScore(300);
+        updateXP(150);
+
+        fbBox.style.background = '#d1fae5';
+        fbTitle.style.color = '#065f46';
+        fbTitle.textContent = '⚡ SERANGAN ILMU TEPAT! (-20% BOSS HP, +300 PTS, +150 XP)';
+        fbDesc.textContent = caseData.explanation;
+
+        document.getElementById('btn-boss-retry').style.display = 'none';
+        const nextBtn = document.getElementById('btn-boss-next');
+        nextBtn.style.display = 'inline-flex';
+        nextBtn.textContent = Game.bossState.hp <= 0 ? '👑 BUKA PORTAL KEMENANGAN AKHIR!' : '⚡ SOALAN KAJIAN KES SETERUSNYA';
+    } else {
+        btn.classList.add('wrong');
+        AudioManager.playSFX('wrong');
+        fbBox.style.background = '#ffe4e6';
+        fbTitle.style.color = '#9f1239';
+        fbTitle.textContent = '🛡️ HUJAH DITANGKIS — SEMAK SEMULA PRINSIP TOPIK 9:';
+        fbDesc.textContent = "Pilih penyelesaian yang paling membela keadilan sosial, kelestarian, dan peranan pendidik yang beretika.";
+
+        document.getElementById('btn-boss-retry').style.display = 'inline-flex';
+        document.getElementById('btn-boss-next').style.display = 'none';
+    }
+}
+
+function showVictoryScreen(isBossVictory = false, stars = 3) {
+    hideAllScreens();
+    document.getElementById('hud-layer').classList.remove('active');
+    showScreen('screen-victory');
+
+    // Spawn celebratory confetti on canvas
+    Game.confetti = [];
+    for (let i = 0; i < 85; i++) {
+        Game.confetti.push({
+            x: Math.random() * canvas.width,
+            y: -Math.random() * canvas.height * 0.5,
+            vx: (Math.random() - 0.5) * 120,
+            vy: 140 + Math.random() * 180,
+            size: 8 + Math.random() * 6,
+            color: ['#00F5FF', '#FF00AA', '#FDE047', '#00FF66', '#8B5CF6'][i % 5],
+            rot: Math.random() * Math.PI
+        });
+    }
+
+    if (isBossVictory) {
+        SaveState.bossDefeated = true;
+        SaveState.unlockAchievement('social_legend');
+        SaveState.save();
+        document.getElementById('victory-badge-top').textContent = 'KEMENANGAN MUTLAK // MPU3152 TOPIK 9';
+        document.getElementById('victory-title').textContent = 'BOSS KETIDAKSAMAAN DITEWASKAN!';
+        document.getElementById('victory-stars').textContent = '👑 ⭐⭐⭐ 👑';
+        document.getElementById('victory-summary-msg').textContent =
+            'Syabas! Melalui penguasaan Keadilan Sosial, Etika Pembangunan, dan Peranan Guru sebagai Agen Perubahan, anda telah membuka Portal Masyarakat Madani!';
+        document.getElementById('btn-victory-next').textContent = '🗺️ PILIH LEVEL LAIN';
+    } else {
+        document.getElementById('victory-badge-top').textContent = `${Game.levelData.title} SELESAI!`;
+        document.getElementById('victory-title').textContent = 'ZON BERJAYA DIKUASAI!';
+        document.getElementById('victory-stars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+        document.getElementById('victory-summary-msg').textContent =
+            `Anda berjaya menamatkan ${Game.levelData.title} (${Game.levelData.subtitle})!`;
+        document.getElementById('btn-victory-next').textContent =
+            Game.currentLevelIndex < 3 ? '▶ LEVEL SETERUSNYA' : '⚔️ CABAR FINAL BOSS!';
+    }
+
+    document.getElementById('victory-score').textContent = Game.score;
+    document.getElementById('victory-coins').textContent = Game.coins;
+    document.getElementById('victory-xp').textContent = SaveState.totalXP;
+    document.getElementById('victory-rank').textContent = SaveState.getRankTitle();
+}
+
+function resetGame() {
+    AudioManager.stopMusic();
+    Game.state = 'MENU';
+    hideAllScreens();
+    document.getElementById('hud-layer').classList.remove('active');
+    updateMainMenuUI();
+    showScreen('screen-main-menu');
+}
+
+// ============================================================================
+// 7. UPDATE & RENDER LOOP (requestAnimationFrame)
+// ============================================================================
+
+function updateGame(dt) {
+    AudioManager.updateScheduler(dt);
+
+    if (Game.screenShake > 0) {
+        Game.screenShake = Math.max(0, Game.screenShake - dt * 40);
+    }
+
+    // Update Confetti if in Victory screen
+    if (Game.state === 'VICTORY') {
+        Game.confetti.forEach(c => {
+            c.x += c.vx * dt;
+            c.y += c.vy * dt;
+            c.rot += 3 * dt;
+            if (c.y > canvas.height) c.y = -20;
+        });
+    }
+
+    // Update Particles & Floating Texts
+    for (let i = Game.particles.length - 1; i >= 0; i--) {
+        const pt = Game.particles[i];
+        pt.x += pt.vx * dt;
+        pt.y += pt.vy * dt;
+        pt.life -= dt;
+        if (pt.life <= 0) Game.particles.splice(i, 1);
+    }
+
+    for (let i = Game.floatingTexts.length - 1; i >= 0; i--) {
+        const ft = Game.floatingTexts[i];
+        ft.y -= 45 * dt;
+        ft.life -= dt;
+        if (ft.life <= 0) Game.floatingTexts.splice(i, 1);
+    }
+
+    if (Game.state !== 'PLAYING' || !Game.player.alive) return;
+
+    const p = Game.player;
+    const speed = Game.levelData.speed;
+
+    // Auto-runner horizontal movement
+    p.x += speed * dt;
+    Game.cameraX = p.x - Math.min(200, Math.floor(canvas.width * 0.22));
+
+    // Decrement timers
+    if (p.coyoteTimer > 0) p.coyoteTimer -= dt;
+    if (p.jumpBufferTimer > 0) p.jumpBufferTimer -= dt;
+
+    // Continuous jump if holding button or buffered jump
+    if ((p.isHoldingJump || p.jumpBufferTimer > 0) && (p.isGrounded || p.coyoteTimer > 0)) {
+        executePlayerJump();
+    }
+
+    // Apply Physics & Collisions
+    applyGravity(dt);
+    detectCollision(dt);
+
+    // Add Neon Trail behind player
+    p.trail.push({
+        x: p.x,
+        y: p.y,
+        rot: p.rotation,
+        alpha: 0.55
+    });
+    if (p.trail.length > 8) p.trail.shift();
+
+    updateProgress();
+}
+
+function renderGame() {
+    ctx.save();
+
+    // Screen Shake offset
+    if (Game.screenShake > 0) {
+        const sx = (Math.random() - 0.5) * Game.screenShake;
+        const sy = (Math.random() - 0.5) * Game.screenShake;
+        ctx.translate(sx, sy);
+    }
+
+    const lvl = Game.levelData || LEVELS_DATA[0];
+    const pulse = AudioManager.beatPulse;
+
+    // 1. Dynamic Neon Cyberpunk Sky Gradient
+    const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    grad.addColorStop(0, lvl.bgColorTop);
+    grad.addColorStop(1, lvl.bgColorBottom);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 2. Pulsating Perspective Background Grid
+    ctx.strokeStyle = lvl.primaryColor;
+    ctx.globalAlpha = 0.12 + pulse * 0.14;
+    ctx.lineWidth = 1.5;
+    const gridSpacing = 70;
+    const offsetX = -(Game.cameraX * 0.35) % gridSpacing;
+
+    for (let x = offsetX; x < canvas.width; x += gridSpacing) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, Game.groundY);
+        ctx.stroke();
+    }
+    for (let y = 60; y < Game.groundY; y += gridSpacing) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    // 3. Audio Visualizer Bars in Background Horizon
+    const barCount = AudioManager.visualizerData.length;
+    const barWidth = canvas.width / barCount;
+    for (let i = 0; i < barCount; i++) {
+        const barH = AudioManager.visualizerData[i] * 140;
+        ctx.fillStyle = i % 2 === 0 ? lvl.primaryColor : lvl.secondaryColor;
+        ctx.globalAlpha = 0.14;
+        ctx.fillRect(i * barWidth + 4, Game.groundY - barH, barWidth - 8, barH);
+    }
+    ctx.globalAlpha = 1;
+
+    // 4. Pulsating Geometric Parallax Shapes
+    for (let i = 0; i < 6; i++) {
+        const px = ((i * 340 - Game.cameraX * 0.2) % (canvas.width + 300) + (canvas.width + 300)) % (canvas.width + 300) - 150;
+        const py = 120 + (i % 3) * 75;
+        const size = 36 + pulse * 14;
+        ctx.save();
+        ctx.translate(px, py);
+        ctx.rotate(performance.now() * 0.0006 * (i % 2 === 0 ? 1 : -1));
+        ctx.strokeStyle = i % 2 === 0 ? lvl.secondaryColor : lvl.primaryColor;
+        ctx.lineWidth = 3;
+        ctx.globalAlpha = 0.28;
+        ctx.strokeRect(-size / 2, -size / 2, size, size);
+        ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+
+    // 5. Render Ground Floor (Neo-Brutalist thick border + Neon stripe)
+    ctx.fillStyle = '#0a0a0f';
+    ctx.fillRect(0, Game.groundY, canvas.width, canvas.height - Game.groundY);
+
+    ctx.fillStyle = lvl.primaryColor;
+    ctx.fillRect(0, Game.groundY, canvas.width, 6 + pulse * 4);
+
+    // Scrolling Floor Hazard Stripes
+    const stripeW = 48;
+    const stripeOffset = -(Game.cameraX % (stripeW * 2));
+    ctx.fillStyle = lvl.secondaryColor;
+    ctx.globalAlpha = 0.25;
+    for (let x = stripeOffset; x < canvas.width; x += stripeW * 2) {
+        ctx.fillRect(x, Game.groundY + 14, stripeW, 12);
+    }
+    ctx.globalAlpha = 1;
+
+    // World Space Translation
+    ctx.save();
+    ctx.translate(-Game.cameraX, 0);
+
+    // 6. Render Obstacles
+    for (const ob of Game.obstacles) {
+        if (ob.x + ob.w < Game.cameraX - 80 || ob.x > Game.cameraX + canvas.width + 80) continue;
+        const obBottom = Game.groundY - ob.yOffset;
+        const obTop = obBottom - ob.h;
+
+        if (ob.type === 'SPIKE') {
+            drawNeonSpike(ob.x, obBottom, ob.w, ob.h, '#FF00AA', pulse);
+        } else if (ob.type === 'DOUBLE_SPIKE') {
+            drawNeonSpike(ob.x, obBottom, ob.w / 2, ob.h, '#FF00AA', pulse);
+            drawNeonSpike(ob.x + ob.w / 2, obBottom, ob.w / 2, ob.h, '#FDE047', pulse);
+        } else if (ob.type === 'BLOCK' || ob.type === 'ELEVATED_PLATFORM') {
+            ctx.fillStyle = '#181824';
+            ctx.fillRect(ob.x, obTop, ob.w, ob.h);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = lvl.primaryColor;
+            ctx.strokeRect(ob.x, obTop, ob.w, ob.h);
+            // Neo-brutalist inner geometric accent
+            ctx.fillStyle = lvl.secondaryColor;
+            ctx.fillRect(ob.x + 6, obTop + 6, ob.w - 12, 6);
+        } else if (ob.type === 'MOVING_OBSTACLE') {
+            ctx.fillStyle = '#FF2A55';
+            ctx.fillRect(ob.x, obTop, ob.w, ob.h);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#FDE047';
+            ctx.strokeRect(ob.x, obTop, ob.w, ob.h);
+            ctx.fillStyle = '#000';
+            ctx.fillRect(ob.x + 10, obTop + 10, ob.w - 20, ob.h - 20);
+        }
+    }
+
+    // 7. Render Coins
+    for (const coin of Game.coinsList) {
+        if (coin.collected) continue;
+        if (coin.x < Game.cameraX - 50 || coin.x > Game.cameraX + canvas.width + 50) continue;
+        const floatY = Math.sin(performance.now() * 0.006 + coin.x * 0.02) * 5;
+        const cy = Game.groundY - coin.yOffset - coin.radius + floatY;
+
+        ctx.save();
+        ctx.translate(coin.x, cy);
+        ctx.fillStyle = coin.kind === 'HIDDEN' ? '#00F5FF' : (coin.kind === 'CLUSTER' ? '#FF00AA' : '#FDE047');
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(0, 0, coin.radius + pulse * 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#000';
+        ctx.font = 'bold 10px "Chakra Petch"';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(coin.kind === 'HIDDEN' ? '★' : '$', 0, 1);
+        ctx.restore();
+    }
+
+    // 8. Render Quiz Gates
+    for (const gate of Game.quizGates) {
+        if (gate.x < Game.cameraX - 100 || gate.x > Game.cameraX + canvas.width + 100) continue;
+        const gateH = 230;
+        const gateTop = Game.groundY - gateH;
+
+        ctx.fillStyle = gate.cleared ? 'rgba(0, 255, 102, 0.22)' : 'rgba(255, 0, 170, 0.32)';
+        ctx.fillRect(gate.x, gateTop, gate.width, gateH);
+
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = gate.cleared ? '#00FF66' : '#FDE047';
+        ctx.strokeRect(gate.x, gateTop, gate.width, gateH);
+
+        // Gate Header Label
+        ctx.fillStyle = '#000';
+        ctx.fillRect(gate.x - 18, gateTop - 34, gate.width + 36, 28);
+        ctx.strokeStyle = '#FDE047';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(gate.x - 18, gateTop - 34, gate.width + 36, 28);
+
+        ctx.fillStyle = '#FDE047';
+        ctx.font = 'bold 12px "Chakra Petch"';
+        ctx.textAlign = 'center';
+        ctx.fillText(gate.cleared ? 'CHECKPOINT ✓' : `QUIZ GATE ${gate.gateIndex + 1}`, gate.x + gate.width / 2, gateTop - 16);
+    }
+
+    // 9. Render Reward & Goal Portals
+    for (const portal of Game.portals) {
+        if (portal.x < Game.cameraX - 100 || portal.x > Game.cameraX + canvas.width + 100) continue;
+        const pTop = Game.groundY - portal.height;
+        const isGoal = portal.type === 'GOAL_PORTAL';
+
+        ctx.save();
+        ctx.strokeStyle = isGoal ? '#FDE047' : '#00FF66';
+        ctx.lineWidth = 5;
+        ctx.strokeRect(portal.x, pTop, portal.width, portal.height);
+
+        ctx.fillStyle = isGoal ? 'rgba(253, 224, 71, 0.28)' : 'rgba(0, 255, 102, 0.22)';
+        ctx.fillRect(portal.x + 4, pTop + 4, portal.width - 8, portal.height - 8);
+
+        ctx.fillStyle = '#FFF';
+        ctx.font = 'bold 12px "Chakra Petch"';
+        ctx.textAlign = 'center';
+        ctx.fillText(isGoal ? 'PORTAL TAMAT' : 'BONUS', portal.x + portal.width / 2, pTop - 10);
+        ctx.restore();
+    }
+
+    // 10. Render Player Cube & Particle Trail
+    if (Game.player.alive) {
+        const skin = SKINS_DATA.find(s => s.id === SaveState.selectedSkin) || SKINS_DATA[0];
+
+        // Trail
+        Game.player.trail.forEach((t, idx) => {
+            ctx.save();
+            ctx.globalAlpha = (idx / Game.player.trail.length) * 0.32;
+            ctx.translate(t.x + Game.player.size / 2, t.y + Game.player.size / 2);
+            ctx.rotate(t.rot);
+            ctx.fillStyle = skin.color;
+            ctx.fillRect(-Game.player.size / 2, -Game.player.size / 2, Game.player.size, Game.player.size);
+            ctx.restore();
+        });
+
+        // Player Cube
+        drawGeometricCube(
+            ctx,
+            Game.player.x + Game.player.size / 2,
+            Game.player.y + Game.player.size / 2,
+            Game.player.size,
+            Game.player.rotation,
+            skin.color,
+            skin.inner,
+            pulse
+        );
+    }
+
+    // 11. Render Particles & Floating Score Text
+    for (const pt of Game.particles) {
+        ctx.fillStyle = pt.color;
+        ctx.fillRect(pt.x, pt.y, pt.size, pt.size);
+    }
+
+    for (const ft of Game.floatingTexts) {
+        ctx.font = 'bold 16px "Chakra Petch"';
+        ctx.fillStyle = '#000';
+        ctx.fillText(ft.text, ft.x + 2, ft.y + 2);
+        ctx.fillStyle = ft.color;
+        ctx.fillText(ft.text, ft.x, ft.y);
+    }
+
+    ctx.restore(); // End World Space
+
+    // 12. Render Confetti Overlay if on Victory Screen
+    if (Game.state === 'VICTORY') {
+        for (const c of Game.confetti) {
+            ctx.save();
+            ctx.translate(c.x, c.y);
+            ctx.rotate(c.rot);
+            ctx.fillStyle = c.color;
+            ctx.fillRect(-c.size / 2, -c.size / 2, c.size, c.size);
+            ctx.restore();
+        }
+    }
+
+    ctx.restore();
+}
+
+function drawNeonSpike(x, bottomY, w, h, color, pulse) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(x, bottomY);
+    ctx.lineTo(x + w / 2, bottomY - h - pulse * 3);
+    ctx.lineTo(x + w, bottomY);
+    ctx.closePath();
+    ctx.fillStyle = '#14141f';
+    ctx.fill();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = color;
+    ctx.stroke();
+
+    // Inner neon core triangle
+    ctx.beginPath();
+    ctx.moveTo(x + w * 0.25, bottomY - 4);
+    ctx.lineTo(x + w / 2, bottomY - h * 0.65);
+    ctx.lineTo(x + w * 0.75, bottomY - 4);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.restore();
+}
+
+function drawGeometricCube(targetCtx, centerX, centerY, size, rotation, primaryColor, innerColor, pulse = 0) {
+    targetCtx.save();
+    targetCtx.translate(centerX, centerY);
+    targetCtx.rotate(rotation);
+
+    const half = size / 2;
+
+    // Outer thick black Neo-Brutalist border
+    targetCtx.fillStyle = primaryColor;
+    targetCtx.strokeStyle = '#000000';
+    targetCtx.lineWidth = 4;
+    targetCtx.fillRect(-half, -half, size, size);
+    targetCtx.strokeRect(-half, -half, size, size);
+
+    // Inner geometric core
+    const innerSize = size * 0.54 + pulse * 3;
+    targetCtx.fillStyle = innerColor;
+    targetCtx.fillRect(-innerSize / 2, -innerSize / 2, innerSize, innerSize);
+    targetCtx.strokeRect(-innerSize / 2, -innerSize / 2, innerSize, innerSize);
+
+    // Cyber visor eyes
+    targetCtx.fillStyle = '#FFFFFF';
+    targetCtx.fillRect(-half * 0.45, -half * 0.25, 7, 7);
+    targetCtx.fillRect(half * 0.15, -half * 0.25, 7, 7);
+
+    targetCtx.restore();
+}
+
+function spawnFloatingText(x, y, text, color) {
+    Game.floatingTexts.push({ x, y, text, color, life: 0.85 });
+}
+
+function gameLoop(timestamp) {
+    if (!Game.lastTimestamp) Game.lastTimestamp = timestamp;
+    const dt = Math.min(0.05, (timestamp - Game.lastTimestamp) / 1000);
+    Game.lastTimestamp = timestamp;
+
+    updateGame(dt);
+    renderGame();
+    renderMenuAndBossPreviews(timestamp);
+
+    requestAnimationFrame(gameLoop);
+}
+
+// Render animated preview canvases on Menu & Boss Modal
+function renderMenuAndBossPreviews(timestamp) {
+    if (Game.state === 'MENU') {
+        const mCanvas = document.getElementById('menu-cube-canvas');
+        if (mCanvas) {
+            const mCtx = mCanvas.getContext('2d');
+            mCtx.clearRect(0, 0, mCanvas.width, mCanvas.height);
+            const skin = SKINS_DATA.find(s => s.id === SaveState.selectedSkin) || SKINS_DATA[0];
+            const bounceY = Math.abs(Math.sin(timestamp * 0.0045)) * 18;
+            drawGeometricCube(
+                mCtx,
+                mCanvas.width / 2,
+                mCanvas.height / 2 + 8 - bounceY,
+                46,
+                timestamp * 0.0025,
+                skin.color,
+                skin.inner,
+                0.3
+            );
+        }
+    } else if (Game.state === 'BOSS') {
+        const bCanvas = document.getElementById('boss-avatar-canvas');
+        if (bCanvas) {
+            const bCtx = bCanvas.getContext('2d');
+            bCtx.clearRect(0, 0, bCanvas.width, bCanvas.height);
+            const cx = bCanvas.width / 2;
+            const cy = bCanvas.height / 2;
+
+            // Animated Boss Geometric Entity
+            bCtx.save();
+            bCtx.translate(cx, cy);
+            bCtx.rotate(timestamp * 0.002);
+            bCtx.strokeStyle = '#FF00AA';
+            bCtx.lineWidth = 4;
+            bCtx.strokeRect(-38, -38, 76, 76);
+
+            bCtx.rotate(-timestamp * 0.004);
+            bCtx.strokeStyle = '#00F5FF';
+            bCtx.lineWidth = 3;
+            bCtx.strokeRect(-26, -26, 52, 52);
+
+            bCtx.fillStyle = '#FF2A55';
+            bCtx.beginPath();
+            bCtx.arc(0, 0, 14 + Math.sin(timestamp * 0.01) * 4, 0, Math.PI * 2);
+            bCtx.fill();
+            bCtx.restore();
+        }
+    }
+}
+
+// ============================================================================
+// 8. UI MANAGER & INPUT EVENT LISTENERS
+// ============================================================================
+
+function showScreen(screenId) {
+    hideAllScreens();
+    const el = document.getElementById(screenId);
+    if (el) el.classList.add('active');
+}
+
+function hideAllScreens() {
+    document.querySelectorAll('.screen-overlay').forEach(el => el.classList.remove('active'));
+}
+
+function updateMainMenuUI() {
+    const totalStars = Object.values(SaveState.levelStars).reduce((a, b) => a + b, 0);
+    document.getElementById('menu-rank-title').textContent = SaveState.getRankTitle();
+    document.getElementById('menu-total-stars').textContent = totalStars;
+    document.getElementById('menu-total-xp').textContent = SaveState.totalXP;
+    document.getElementById('menu-high-score').textContent = SaveState.highScore;
+
+    const xpPct = Math.min(100, Math.floor((SaveState.totalXP / 1500) * 100));
+    document.getElementById('menu-xp-fill').style.width = `${xpPct}%`;
+
+    // Render Skin Selector Dots
+    const skinContainer = document.getElementById('skin-selector-container');
+    skinContainer.innerHTML = '';
+    SKINS_DATA.forEach(skin => {
+        const unlocked = SaveState.totalXP >= skin.reqXP;
+        const dot = document.createElement('div');
+        dot.className = `skin-dot ${SaveState.selectedSkin === skin.id ? 'active' : ''} ${unlocked ? '' : 'locked'}`;
+        dot.style.background = skin.color;
+        dot.title = unlocked ? skin.name : `${skin.name} (Perlu ${skin.reqXP} XP)`;
+        dot.addEventListener('click', () => {
+            if (unlocked) {
+                SaveState.selectedSkin = skin.id;
+                SaveState.save();
+                document.getElementById('selected-skin-name').textContent = `SKIN: ${skin.name}`;
+                updateMainMenuUI();
+                AudioManager.playSFX('coin');
+            }
+        });
+        skinContainer.appendChild(dot);
+    });
+}
+
+function renderLevelSelectGrid() {
+    const container = document.getElementById('levels-grid-container');
+    container.innerHTML = '';
+
+    LEVELS_DATA.forEach((lvl, idx) => {
+        const isUnlocked = SaveState.unlockedLevels.includes(lvl.id);
+        const stars = SaveState.levelStars[lvl.id] || 0;
+        const starStr = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+
+        const card = document.createElement('div');
+        card.className = `level-card ${isUnlocked ? '' : 'locked'}`;
+        card.innerHTML = `
+            <div>
+                <div class="level-header">
+                    <span class="neo-badge" style="background:${lvl.primaryColor};">${lvl.worldTheme}</span>
+                    <span class="level-stars">${starStr}</span>
+                </div>
+                <h3 style="font-family:var(--font-display); font-size:1.2rem; margin:6px 0 4px;">${lvl.title}</h3>
+                <p style="font-size:0.84rem; font-weight:600; color:#333; margin-bottom:12px;">${lvl.subtitle}</p>
+            </div>
+            <button class="neo-btn ${isUnlocked ? 'green' : 'white'}" style="width:100%; padding:10px;" ${isUnlocked ? '' : 'disabled'}>
+                ${isUnlocked ? '▶ MAIN SEKARANG' : '🔒 TERKUNCI'}
+            </button>
+        `;
+        if (isUnlocked) {
+            card.querySelector('button').addEventListener('click', () => startGame(idx));
+        }
+        container.appendChild(card);
+    });
+}
+
+function renderAchievementsGrid() {
+    const grid = document.getElementById('achievements-grid');
+    grid.innerHTML = '';
+    ACHIEVEMENTS_DATA.forEach(ach => {
+        const unlocked = !!SaveState.achievements[ach.id];
+        const div = document.createElement('div');
+        div.className = `badge-item ${unlocked ? 'unlocked' : ''}`;
+        div.innerHTML = `
+            <div style="font-size:1.6rem; margin-bottom:4px;">${unlocked ? ach.icon : '🔒'}</div>
+            <div style="font-family:var(--font-display); font-weight:800;">${ach.title}</div>
+            <div style="font-size:0.74rem; margin-top:4px;">${ach.desc}</div>
+        `;
+        grid.appendChild(div);
+    });
+}
+
+function setupInputHandlers() {
+    // Keyboard controls
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+            if (Game.state === 'PLAYING') {
+                e.preventDefault();
+                Game.player.isHoldingJump = true;
+                handleJump();
+            }
+        } else if (e.code === 'Escape' || e.code === 'KeyP') {
+            if (Game.state === 'PLAYING') {
+                pauseGame();
+            } else if (Game.state === 'PAUSED') {
+                resumeGame();
+            }
+        }
+    });
+
+    window.addEventListener('keyup', (e) => {
+        if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+            Game.player.isHoldingJump = false;
+        }
+    });
+
+    // Mouse / Touch on Canvas
+    canvas.addEventListener('pointerdown', (e) => {
+        if (Game.state === 'PLAYING') {
+            e.preventDefault();
+            Game.player.isHoldingJump = true;
+            handleJump();
+        }
+    });
+
+    window.addEventListener('pointerup', () => {
+        Game.player.isHoldingJump = false;
+    });
+}
+
+function pauseGame() {
+    if (Game.state !== 'PLAYING') return;
+    Game.state = 'PAUSED';
+    Game.player.isHoldingJump = false;
+    AudioManager.stopMusic();
+    document.getElementById('pause-level-label').textContent = Game.levelData.title;
+    showScreen('screen-pause');
+}
+
+function resumeGame() {
+    if (Game.state !== 'PAUSED') return;
+    Game.state = 'PLAYING';
+    hideAllScreens();
+    AudioManager.startMusic(Game.levelData.bpm, Game.currentLevelIndex);
+}
+
+function setupUIEventListeners() {
+    // Main Menu Buttons
+    document.getElementById('btn-start-game').addEventListener('click', () => startGame(0));
+    document.getElementById('btn-level-select').addEventListener('click', () => {
+        renderLevelSelectGrid();
+        showScreen('screen-level-select');
+    });
+    document.getElementById('btn-how-to-play').addEventListener('click', () => showScreen('screen-how-to-play'));
+    document.getElementById('btn-sound-settings').addEventListener('click', () => {
+        renderAchievementsGrid();
+        showScreen('screen-settings');
+    });
+
+    // Level Select Buttons
+    document.getElementById('btn-back-from-levels').addEventListener('click', () => {
+        updateMainMenuUI();
+        showScreen('screen-main-menu');
+    });
+    document.getElementById('btn-unlock-all').addEventListener('click', () => {
+        SaveState.unlockedLevels = [1, 2, 3, 4];
+        SaveState.save();
+        renderLevelSelectGrid();
+        AudioManager.playSFX('secret_coin');
+    });
+    document.getElementById('btn-launch-boss').addEventListener('click', () => startBossChallenge());
+
+    // How to Play Close
+    document.getElementById('btn-close-howto').addEventListener('click', () => showScreen('screen-main-menu'));
+
+    // Sound Settings & Reset
+    document.getElementById('btn-close-settings').addEventListener('click', () => {
+        updateMainMenuUI();
+        showScreen('screen-main-menu');
+    });
+    document.getElementById('btn-toggle-music').addEventListener('click', (e) => {
+        AudioManager.musicEnabled = !AudioManager.musicEnabled;
+        e.target.textContent = `MUZIK: ${AudioManager.musicEnabled ? 'ON' : 'OFF'}`;
+        document.getElementById('hud-music-btn').textContent = `🎵 MUZIK: ${AudioManager.musicEnabled ? 'ON' : 'OFF'}`;
+    });
+    document.getElementById('btn-toggle-sfx').addEventListener('click', (e) => {
+        AudioManager.sfxEnabled = !AudioManager.sfxEnabled;
+        e.target.textContent = `KESAN BUNYI (SFX): ${AudioManager.sfxEnabled ? 'ON' : 'OFF'}`;
+    });
+    document.getElementById('volume-slider').addEventListener('input', (e) => {
+        const val = parseInt(e.target.value, 10);
+        AudioManager.volume = val / 100;
+        document.getElementById('volume-label').textContent = `${val}%`;
+    });
+    document.getElementById('btn-reset-save').addEventListener('click', () => {
+        SaveState.reset();
+        renderAchievementsGrid();
+        updateMainMenuUI();
+        AudioManager.playSFX('crash');
+    });
+
+    // HUD Controls
+    document.getElementById('hud-pause-btn').addEventListener('click', pauseGame);
+    document.getElementById('hud-music-btn').addEventListener('click', (e) => {
+        AudioManager.musicEnabled = !AudioManager.musicEnabled;
+        e.target.textContent = `🎵 MUZIK: ${AudioManager.musicEnabled ? 'ON' : 'OFF'}`;
+        document.getElementById('btn-toggle-music').textContent = `MUZIK: ${AudioManager.musicEnabled ? 'ON' : 'OFF'}`;
+    });
+    document.getElementById('hud-assist-btn').addEventListener('click', (e) => {
+        Game.assistAutoJump = !Game.assistAutoJump;
+        e.target.textContent = `🤖 AUTO: ${Game.assistAutoJump ? 'ON' : 'OFF'}`;
+        e.target.style.background = Game.assistAutoJump ? '#00FF66' : '#FDE047';
+    });
+
+    // Quiz Gate Modal Buttons
+    document.getElementById('btn-quiz-retry').addEventListener('click', () => {
+        if (Game.activeGate) showQuizGate(Game.activeGate);
+    });
+    document.getElementById('btn-quiz-continue').addEventListener('click', () => {
+        if (Game.activeGate) {
+            Game.activeGate.cleared = true;
+            // Save Checkpoint right after clearing this Quiz Gate
+            Game.checkpointX = Game.activeGate.x + 80;
+            Game.checkpointScore = Game.score;
+            Game.checkpointCoins = Game.coins;
+            spawnFloatingText(Game.player.x, Game.player.y - 40, "CHECKPOINT DISIMPAN!", "#00F5FF");
+            Game.activeGate = null;
+        }
+        hideAllScreens();
+        Game.state = 'PLAYING';
+    });
+
+    // Pause Screen Buttons
+    document.getElementById('btn-resume-game').addEventListener('click', resumeGame);
+    document.getElementById('btn-restart-level').addEventListener('click', () => startGame(Game.currentLevelIndex));
+    document.getElementById('btn-pause-to-menu').addEventListener('click', resetGame);
+
+    // Game Over Screen Buttons
+    document.getElementById('btn-continue-checkpoint').addEventListener('click', () => {
+        resetPlayerPosition(Game.checkpointX);
+        hideAllScreens();
+        Game.state = 'PLAYING';
+        AudioManager.startMusic(Game.levelData.bpm, Game.currentLevelIndex);
+    });
+    document.getElementById('btn-gameover-retry').addEventListener('click', () => startGame(Game.currentLevelIndex));
+    document.getElementById('btn-gameover-menu').addEventListener('click', resetGame);
+
+    // Boss Challenge Buttons
+    document.getElementById('btn-boss-retreat').addEventListener('click', resetGame);
+    document.getElementById('btn-boss-retry').addEventListener('click', renderBossCaseQuestion);
+    document.getElementById('btn-boss-next').addEventListener('click', () => {
+        if (Game.bossState.hp <= 0 || Game.bossState.caseIndex >= BOSS_QUESTIONS_DATA.length - 1) {
+            AudioManager.stopMusic();
+            AudioManager.playSFX('victory');
+            showVictoryScreen(true, 3);
+        } else {
+            Game.bossState.caseIndex += 1;
+            renderBossCaseQuestion();
+        }
+    });
+
+    // Victory Screen Buttons
+    document.getElementById('btn-victory-next').addEventListener('click', () => {
+        if (document.getElementById('victory-title').textContent.includes('BOSS')) {
+            renderLevelSelectGrid();
+            showScreen('screen-level-select');
+        } else if (Game.currentLevelIndex < 3) {
+            startGame(Game.currentLevelIndex + 1);
+        } else {
+            startBossChallenge();
+        }
+    });
+    document.getElementById('btn-victory-replay').addEventListener('click', () => startGame(Game.currentLevelIndex));
+    document.getElementById('btn-victory-menu').addEventListener('click', resetGame);
+}
+
+// Start the engine on window load
+window.onload = function () {
+    initGame();
+};
+</script>
+</body>
+</html>
